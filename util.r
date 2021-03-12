@@ -432,6 +432,23 @@ aggregate <- function (
 
 # Outcome measure ______________________________________________________________
 #
+
+# Hamming distance between TC-mappings:
+twdis <- function(a, b, normalized = TRUE){
+  ifelse(
+    normalized,
+    denom <- length(a),
+    denom <- 1
+  )
+  ifelse(
+    length(a) == length(b),      # If the two networks have equal sizes...
+    return(sum(a != b) / denom), # ...count their (relative) differences.
+    stop("TCM matrices have different sizes")
+  )
+}
+
+
+
 # Adapted from "Muser" (November 2013), Stackoverflow. Url:
 # https://stackoverflow.com/questions/20224871/kendall-tau-distance-a-k-a-bubble-sort-distance-between-permutations-in-base-r/20224872#20224872
 # Last accessed on November 30, 2020.
