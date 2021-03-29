@@ -31,6 +31,22 @@ for (i in 1:length(s$q27$i)){
 }
 TCM <- s$q27$i[-emptyTCM]
 
+# We also create a list of random TCM with the same average density as the real
+# one. We'll save both the real and the random TCM lists in RDATA files that
+# are used by the simulation.
+dens <- sum(unlist(TCM)) / length(unlist(TCM))
+set.seed(20210312)
+randomTCM <- list()
+for(i in 1:length(TCM)) {
+  randomTCM[[i]] <- matrix(
+    sample(c(TRUE,FALSE), size = 36, replace = TRUE, prob = c(dens, 1 - dens)),
+    nrow = 12, ncol = 3
+  )
+}
+save(TCM, file = "./data/surveyTCM.RData")
+TCM <- randomTCM
+save(TCM, file = "./data/randomTCM.RData")
+load("./data/surveyTCM.RData") # Restoring the correct TCM for further use.
 
 # For the remaining valid TC-mappings, we need to calculate the average Hamming
 # distance, which operationalizes our independent variable, TC-mapping
@@ -110,3 +126,90 @@ hist(estim)
 summary(estim)
 mean(estim)
 # We now have our benchmark :)
+
+
+
+# TC-mapping plots
+#
+topics <- data.frame(x = rep(0, times = 12), y = 1:12)
+criteria <- data.frame(x = c(1, 1, 1), y = c(4, 6, 8))
+edges <- data.frame(
+  x = rep(0, times = 36),
+  xend = rep(1, times = 36),
+  y = c(1:12),
+  yend = c(rep(4, times = 12), rep(6, times = 12), rep(8, times = 12))
+)
+
+
+png(
+  filename = "./outputGraphics/TC-mapping.png",
+  width = 1500,
+  height = 1500,
+  res = 300,
+  units = "px", bg = "transparent"
+)
+ggplot() +
+  geom_segment(
+    data = edges,
+    aes(x = x, xend = xend, y = y, yend = yend)
+  ) +
+  geom_point(data = topics, aes(x = x, y = y), size = 4) +
+  geom_point(data = criteria, aes(x = x, y = y), size = 4) +
+  theme(
+    plot.background = element_blank(),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank()
+  )
+dev.off()
+
+
+
+
+
+png(
+  filename = "./outputGraphics/TC-mapping2.png",
+  width = 5000,
+  height = 1500,
+  res = 300,
+  units = "px", bg = "transparent"
+)
+ggplot() +
+  geom_segment(aes(
+    x = rep(-1.5, times = 12), xend = rep(0, times = 12),
+    y = 1:12, yend = 1:12
+  ), linetype = "dashed", color = "gray50",
+  arrow = arrow(angle = 15, type = "closed", length = unit(10, "pt"))) +
+  geom_segment(
+    data = edges,
+    aes(x = x, xend = xend, y = y, yend = yend)
+  ) +
+  geom_segment(
+    aes(x = c(1, 1, 1), xend = c(2,2,2), y = c(4, 6, 8), yend = c(6, 6, 6)),
+    color = "black",
+    arrow = arrow(angle = 5, type = "closed", length = unit(10, "pt"))
+  ) +
+  geom_segment(
+    aes(x = 2, xend = 3.5, y = 6, yend = 6), color = "black",
+    arrow = arrow(angle = 15, type = "closed", length = unit(10, "pt"))
+  ) +
+  geom_point(
+    aes(x = rep(-1.5, times = 12), y = 1:12), size = 4, color = "black") +
+  geom_point(data = topics, aes(x = x, y = y), size = 4, color = "darkorange") +
+  geom_point(
+    data = criteria, aes(x = x, y = y), size = 4, color = "darkorange") +
+  geom_point(aes(x = c(2, 3.5), y = c(6, 6)), size = 4, color = "darkorange") +
+  theme(
+    plot.background = element_blank(),
+    panel.background = element_blank(),
+    panel.grid = element_blank(),
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.line = element_blank(),
+    axis.ticks = element_blank()
+  )
+
+dev.off()

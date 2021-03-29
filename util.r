@@ -26,65 +26,6 @@ allocationNetwork <- function(
 
 
 
-# Grading language _____________________________________________________________
-# A grade language is a vector of thresholds used to discretize a continuous 
-# quantity (e.g. a rate).
-# This function takes as input a criterion and the scholars data.frame, and for
-# each it returns a list where each item is the grade language of a scholar.
-createGradeLanguage <- function(
-  scholars = reviewers,
-  criterion = criteria[1,] # A row of the criteria dataframe, the 1st by default
-)
-{
-  gradeLanguages <- list()
-  thresholds <- c()
-  
-  # If the grade language is random, then we create a grade language where the
-  # thresholds are drawn from a uniform distribution.
-  if (criterion$gradeLanguage == "random"){
-    thresholds <- runif (
-      n = criterion$scale - 1, # This determines how many thresholds we need
-      min = 0, max = 1
-    )
-    #thresholds <- thresholds[order(thresholds)]
-  }
-  
-  # If the grade language is symmetric, then the thresholds are evenly spread
-  # in the range.
-  if (criterion$gradeLanguage == "symmetric"){
-    thresholds <- (1:criterion$scale - 1) / criterion$scale
-    thresholds <- thresholds[-1]#[c(-1, -criterion$scale)]
-  }
-  
-  # If the grade language is asymmetric, then the threshold are concentrated
-  # around high quality values (where reviewers may be more focused)
-  if (criterion$gradeLanguage == "asymmetric"){
-    for (l in 1:(criterion$scale - 1)){
-      thresholds[l] <- 1 - ((3 / 5) ^ l)  ## Equation 2
-    }
-    #thresholds <- thresholds[order(thresholds)]
-  }
-  
-  
-  # Then, for each agent, we determine how much noise (if any)
-  # there needs to be around those thresholds
-  for (i in 1:nrow(scholars)){
-    gradeLanguages[[i]] <- thresholds
-    for (l in 1:(criterion$scale - 1)) {
-      gradeLanguages[[i]][l] <- truncate(rnorm( # Equation 3
-        n = 1,
-        mean = thresholds[l],
-        sd = criterion$glh * (1 - ((l - 1) / criterion$scale))
-      ))
-    }
-    
-    # And finally we order all agent thresholds:
-    gradeLanguages[[i]] <- gradeLanguages[[i]][order(gradeLanguages[[i]])]
-  }
-  
-  return(gradeLanguages)
-}
-
 
 
 # How a referee reviews a proposal _____________________________________________

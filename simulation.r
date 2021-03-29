@@ -1,8 +1,120 @@
 # This script defines the main simulation function.
 # At the end of the script there is some example code showing how to run it.
+rm(list=ls())
 
-# Loading auxiliary functions:
+# Loading auxiliary functions and libraries:
 source("./util.r")
+library("faux")
+
+seed = sample(-99999999:99999999, size = 1)
+nReviewers = 5
+nTopics = 12
+nCriteria = 3
+topicsError = rep(0.2, times = nTopics)
+topicsBias = runif(n = nTopics, min = -0.2, max = 0.2)
+GLinterpretation = "asymmetric"
+GLheterogeneity = 0.2
+gradingScale = 5 # number of categories in the evaluation scale
+q = 0.5
+sdq = 0.3
+calibrationData = "random" # or "survey" (survey data not available on GitHub)
+
+
+# Setting random seed
+set.seed(seed)
+
+# Creating a proposal with a given number of "cues"/topics of correlated
+# quality
+prop <- truncate(rnorm_multi(
+  n = 1,
+  mu = rep(q, times = nTopics),
+  sd = rep(sdq, times = nTopics),
+  r = 0.7,
+  as.matrix = TRUE
+))
+
+# A grade language is a vector of thresholds used to discretize the cues from
+# the proposals (continuous variable) into a discrete grade.
+# Here we define the "standard" grade language.
+GLthresholds <- c()
+if (GLinterpretation == "random"){ # ... then set thresholds at random.
+  GLthresholds <- runif (
+    n = gradingScale - 1, # This determines how many thresholds we need
+    min = 0, max = 1
+  )
+  GLthresholds <- GLthresholds[order(GLthresholds)]
+} else if (GLinterpretation == "symmetric"){ # ... then spread them evenly.
+  GLthresholds <- (1:gradingScale - 1) / gradingScale
+  GLthresholds <- GLthresholds[-1]
+} else if (GLinterpretation == "asymmetric"){ #...then they are left-skewed.
+  for (l in 1:(gradingScale - 1)){
+    GLthresholds[l] <- 1 - ((3 / 5) ^ l) 
+  }
+}
+
+# We also load the correct TC-mapping, either from the survey or from a
+# randomly generated one.
+load(paste0("./data/", calibrationData, "TCM.RData"))
+
+
+
+reviewers <- list()
+
+for(r in 1:nReviewers) {
+  
+  
+  # Reviewer initialization: error and bias_____________________________________
+  reviewers[[r]] <- list(
+    error = topicsError,
+    bias = topicsBias
+  )
+  
+  
+  # Reviewer initialization: interpretation of the GL___________________________
+  # We determine the reviewer's own interpretation of the grading language:
+  gl <- sapply(1:(gradingScale - 1), FUN = function(i){
+    truncate(rnorm( # Equation 3
+      n = 1,
+      mean = GLthresholds[i],
+      sd = GLheterogeneity * (1 - ((i - 1) / gradingScale))
+    ))
+  })
+  # Last, we order all thresholds in increasing order:
+  reviewers[[r]]$gl <- gl <- gl[order(gl)]
+  
+  
+  # Reviewer initialization: TC-Mapping_________________________________________
+  # Taking a random TCM from those available.
+  tcm <- TCM[[sample(1:length(TCM), size = 1)]]
+  
+  
+  
+  
+  
+}
+
+
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## From aggregation study:
+
+
 
 # The most important argument in this function is the criteria data.frame,
 simulation <- function (
