@@ -91,9 +91,6 @@ TCM <- matrix(
 )
 
 
-for(c in 1:nCriteria) TCM[,c] <- rbinom(nTopics, size = 1, prob = pTCM[,c])
-
-
 
 reviewers <- list()
 for(r in 1:nReviewers) {
