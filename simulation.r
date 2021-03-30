@@ -5,6 +5,7 @@ rm(list=ls())
 # Loading auxiliary functions and libraries:
 source("./util.r")
 library("faux")
+library("irr")
 
 seed = sample(-99999999:99999999, size = 1)
 nReviewers = 5
@@ -15,7 +16,7 @@ topicsBias = runif(n = nTopics, min = -0.2, max = 0.2)
 GLinterpretation = "asymmetric"
 GLdiversity = 0.2
 gradingScale = 5 # number of categories in the evaluation scale
-TCMdiversity = 0.2
+TCMswapping = 0.2
 q = 0.5
 sdq = 0.3
 #calibrationData = "random" # or "survey" (survey data not available on GitHub)
@@ -33,6 +34,12 @@ prop <- truncate(rnorm_multi(
   r = 0.7,
   as.matrix = TRUE
 ))
+
+
+# Initializing the objects to store reviewer evaluations:
+gradesCrit <- matrix(NA, nrow = nReviewers, ncol = nCriteria)
+gradesOverall <- rep(NA, times = nReviewers)
+
 
 # A grade language is a vector of thresholds used to discretize the cues from
 # the proposals (continuous variable) into a discrete grade.
@@ -91,18 +98,17 @@ TCM <- matrix(
 )
 
 
-
 reviewers <- list()
 for(r in 1:nReviewers) {
   
-  # Reviewer initialization: error and bias_____________________________________
+  # Reviewer initialization: error and bias___________________________________
   reviewers[[r]] <- list(
     error = topicsError,
     bias = topicsBias
   )
   
   
-  # Reviewer initialization: interpretation of the GL___________________________
+  # Reviewer initialization: interpretation of the GL_________________________
   # We determine the reviewer's own interpretation of the grading language:
   gl <- sapply(1:(gradingScale - 1), FUN = function(i){
     truncate(rnorm( # Equation 3
@@ -115,14 +121,14 @@ for(r in 1:nReviewers) {
   reviewers[[r]]$gl <- gl <- gl[order(gl)]
   
   
-  # Reviewer initialization: TC-Mapping_________________________________________
+  # Reviewer initialization: TC-Mapping_______________________________________
   # Here we rewire the "template" TC-mapping to create the mapping of
   # reviewer "r".
   # We start by determining how many links in the network we shall rewire.
   # Because we need to keep the network density constant, we rewire by 
   # swapping ties. So we start by calculating how many swaps we need to make
   tcm <- c(TCM)
-  nSwaps <- round(TCMdiversity * nTopics * nCriteria)
+  nSwaps <- round(TCMswapping * nTopics * nCriteria)
   
   # Then we start swapping random couples of links.
   swaps <- 0
@@ -144,11 +150,71 @@ for(r in 1:nReviewers) {
   
   
   
+  # Reviewing the proposal____________________________________________________
+  #
+  # 1) Bias and error in the perception of the cues/topics:
+  reviewers[[r]]$perceived <- truncate(rnorm(
+    n = nTopics,
+    mean = prop + reviewers[[r]]$bias,
+    sd = reviewers[[r]]$error
+  ))
   
+  # 2) Producing criterial evaluations based on the reviewer's TC-mapping:
+  critEval <- sapply(
+    1:nCriteria,
+    FUN = function(c) {
+      weighted.mean(x = reviewers[[r]]$perceived, w = tcm[,c])
+    }
+  )
   
-  
-  
+  # 3) Producing criterial grades based on the reviewer's interpretation of
+  #    the grading language. This works by discretizing the evaluation scale
+  #    (in [0,1]) into the discrete grading language.
+  gradesCrit[r,] <- findInterval(x = critEval, vec = gl) + 1
+  gradesOverall[r] <-
+    findInterval(x = mean(critEval, na.rm = TRUE), vec = gl) + 1
 }
+
+
+# Calculating outcome variables_______________________________________________
+#
+#
+# TC-mapping heterogeneity.
+# We calculate the hamming distance in TC-mapping between all pairs of
+# reviewers. We start by finding all possible pairs of reviewers:
+diff <- as.data.frame(t(combn(1:nReviewers, m = 2)))
+#diff$d <- NA
+
+# Then we calculate the hamming distance between all pairs. Simply, the
+# function "twdis" counts the differences between two same-sized networks,
+# and normalizes the tally by dividing it by the total number of possible
+# differences (i.e. the number of ties).
+diff$d <- apply(
+  X = diff,
+  MARGIN = 1,
+  FUN = function(x) {
+    twdis(
+      a = reviewers[[x[1]]]$tcm,
+      b = reviewers[[x[2]]]$tcm,
+      normalized = TRUE
+    )
+  }
+)
+
+# Finally, the average normalized hammming distance is what we call
+# TC-mapping diversity:
+TCMdiversity <- mean(diff$d)
+
+
+
+# Inter-rater reliability (IRR).
+# We calculate IRR for the evaluation criteria separately, and also for the
+# overall evaluation.
+
+
+
+
+
 
 
 #
@@ -461,7 +527,6 @@ simulation <- function (
       # quality at least equal to that of the k-th proposal in the merit
       # ranking.
       acceptableOnes <- which(submissions$trueQuality >= thT)
-      
       
       # Submissions above the equivalence class of the k-th best:
       nonDiscretionaryPanelChoice <- which(x > thE)
