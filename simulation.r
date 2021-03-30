@@ -8,16 +8,17 @@ library("faux")
 
 seed = sample(-99999999:99999999, size = 1)
 nReviewers = 5
-nTopics = 12
-nCriteria = 3
+nTopics = 5
+nCriteria = 4
 topicsError = rep(0.2, times = nTopics)
 topicsBias = runif(n = nTopics, min = -0.2, max = 0.2)
 GLinterpretation = "asymmetric"
-GLheterogeneity = 0.2
+GLdiversity = 0.2
 gradingScale = 5 # number of categories in the evaluation scale
+TCMdiversity = 0.2
 q = 0.5
 sdq = 0.3
-calibrationData = "random" # or "survey" (survey data not available on GitHub)
+#calibrationData = "random" # or "survey" (survey data not available on GitHub)
 
 
 # Setting random seed
@@ -52,16 +53,50 @@ if (GLinterpretation == "random"){ # ... then set thresholds at random.
   }
 }
 
-# We also load the correct TC-mapping, either from the survey or from a
-# randomly generated one.
-load(paste0("./data/", calibrationData, "TCM.RData"))
+# We also create a "template" TC-mapping from which each reviewer's own
+# mapping will deviate to a specified degree. The "template" mapping is
+# created by making links between topics and criteria with a probability 
+# equal to the relative frequency of that link from the survey responses.
+# Unlike the raw survey microdata that cannot be shared, the probability
+# weights constitute aggregate statistics and thus can be (and are) included
+# in the GitHub repository.
+# In our intentions, this way of creating TC-mappings allows for realistic
+# mappings in the simulation while preserving full reproducibility of our
+# results. It allows allows for easy manipulation of the TC-mapping network,
+# specifically of its size (number of topics and of criteria) and inter-
+# -reviewer diversity.
+#
+# Loading probability weights:
+load("./data/pTCM.RData")
+
+# Sampling (or cloning) topics and criteria (i.e. rows and columns) to create
+# a template mapping of the desired size:
+ifelse(
+  nTopics <= nrow(pTCM),
+  topics <- sort(sample(1:nrow(pTCM), size = nTopics, replace = FALSE)),
+  topics <- sample(1:nrow(pTCM), size = nTopics, replace = TRUE)
+)
+ifelse(
+  nCriteria <= ncol(pTCM),
+  criteria <- sort(sample(1:ncol(pTCM), size = nCriteria, replace = FALSE)),
+  criteria <- sample(1:ncol(pTCM), size = nCriteria, replace = TRUE)
+)
+pTCM <- pTCM[topics,criteria]
+
+# Now we use the probability weights in pTCM to determine where the TC-links
+# are in the "template" TC-mapping. We do this via Bernoulli trials.
+TCM <- matrix(
+  rbinom(nTopics * nCriteria, size = 1, prob = c(pTCM)),
+  ncol = nCriteria
+)
+
+
+for(c in 1:nCriteria) TCM[,c] <- rbinom(nTopics, size = 1, prob = pTCM[,c])
 
 
 
 reviewers <- list()
-
 for(r in 1:nReviewers) {
-  
   
   # Reviewer initialization: error and bias_____________________________________
   reviewers[[r]] <- list(
@@ -76,7 +111,7 @@ for(r in 1:nReviewers) {
     truncate(rnorm( # Equation 3
       n = 1,
       mean = GLthresholds[i],
-      sd = GLheterogeneity * (1 - ((i - 1) / gradingScale))
+      sd = GLdiversity * (1 - ((i - 1) / gradingScale))
     ))
   })
   # Last, we order all thresholds in increasing order:
@@ -84,8 +119,33 @@ for(r in 1:nReviewers) {
   
   
   # Reviewer initialization: TC-Mapping_________________________________________
-  # Taking a random TCM from those available.
-  tcm <- TCM[[sample(1:length(TCM), size = 1)]]
+  # Here we rewire the "template" TC-mapping to create the mapping of
+  # reviewer "r".
+  # We start by determining how many links in the network we shall rewire.
+  # Because we need to keep the network density constant, we rewire by 
+  # swapping ties. So we start by calculating how many swaps we need to make
+  tcm <- c(TCM)
+  nSwaps <- round(TCMdiversity * nTopics * nCriteria)
+  
+  # Then we start swapping random couples of links.
+  swaps <- 0
+  repeat{
+    linksToSwap <- sample(
+      1:(nTopics * nCriteria),
+      size = 2,
+      replace = FALSE
+    )
+    tcm[linksToSwap] <- tcm[rev(linksToSwap)]
+    
+    swaps <- swaps + 1
+    if(swaps >= nSwaps) break
+  }
+  rm(nSwaps, swaps)
+  
+  # We conclude by formatting the TC-mapping matrix appropriately:
+  reviewers[[r]]$tcm <- tcm <- matrix(tcm, ncol = nCriteria)
+  
+  
   
   
   

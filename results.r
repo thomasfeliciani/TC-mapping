@@ -4,7 +4,7 @@ rm(list = ls())
 library(ggplot2)
 source("util.r")
 
-load("./data/survey.RData") # Loading survey 
+load("./data/unshareable/survey.RData") # Loading survey 
 
 
 #a = s$q27$i[[1]]
@@ -31,22 +31,14 @@ for (i in 1:length(s$q27$i)){
 }
 TCM <- s$q27$i[-emptyTCM]
 
-# We also create a list of random TCM with the same average density as the real
-# one. We'll save both the real and the random TCM lists in RDATA files that
-# are used by the simulation.
-dens <- sum(unlist(TCM)) / length(unlist(TCM))
-set.seed(20210312)
-randomTCM <- list()
-for(i in 1:length(TCM)) {
-  randomTCM[[i]] <- matrix(
-    sample(c(TRUE,FALSE), size = 36, replace = TRUE, prob = c(dens, 1 - dens)),
-    nrow = 12, ncol = 3
-  )
-}
-save(TCM, file = "./data/surveyTCM.RData")
-TCM <- randomTCM
-save(TCM, file = "./data/randomTCM.RData")
-load("./data/surveyTCM.RData") # Restoring the correct TCM for further use.
+# We also calculate the relative frequency of each edge in the network (i.e.
+# each matching of topics-criteria) and we save it to file. These are used by
+# the simulation script as calibration data to generate realistic TC-mappings.
+pTCM <- matrix(0, nrow = 12, ncol = 3)
+for (m in 1:length(TCM)) pTCM <- pTCM + TCM[[m]]
+for (c in 1:3) for (r in 1:12) pTCM[r,c] <- pTCM[r,c] / length(TCM)
+save(pTCM, file = "./data/pTCM.RData")
+
 
 # For the remaining valid TC-mappings, we need to calculate the average Hamming
 # distance, which operationalizes our independent variable, TC-mapping

@@ -7,7 +7,7 @@
 /test.r
 
 # Input data and ABM output
-/data/
+/data/unshareable/
 /output/
 /outputGraphics/
 *.html
