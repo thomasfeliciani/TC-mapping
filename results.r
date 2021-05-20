@@ -1,11 +1,89 @@
 
 # Clearing environment and loading libraries and resources.
 rm(list = ls())
-library(ggplot2)
+library("ggplot2")
+library("reshape", include.only = "melt")
 source("util.r")
 
 load("./data/unshareable/survey.RData") # Loading survey 
 
+
+# First we look into the survey demographics, comparing them withe the
+# composition of the population of SFI reviewers.
+#
+# Formatting data so it can be easily plotted:
+a <- melt(s$populationDemographics$gender, id.vars = "class")
+a$facet <- "gender"
+a$class[a$class == "prefer not to say / non-response"] <-
+  "prefer not to say"
+
+b <- melt(s$populationDemographics$country, id.vars = "class")
+b$facet <- "institution country"
+b$class[b$class == "other EU country"] <- "European Union"
+b <- b[b$class != "non-response",]
+
+c <- melt(s$populationDemographics$institution, id.vars = "class")
+c$facet <- "background"
+c$class[c$class == "other/non-response"] <-
+  "other /\nprefer not to say"
+
+d <- melt(s$populationDemographics$program, id.vars = "class")
+d$facet <- "reviewed for"
+d$class[d$class == "only Industry Fellowship"] <-
+  "Industry Fellowship"
+d$class[d$class == "only Investigators Programme"] <-
+  "Investigators Programme"
+d$class[d$class == "both"] <- "both programs"
+d$class[d$class == "neither/non-response"] <-
+  "neither"
+
+demo <- rbind(a, b, c)#, d)
+rm(a, b, c, d)
+
+demo$class <- factor(x = demo$class, levels = unique(demo$class))
+demo$facet <- factor(x = demo$facet, levels = unique(demo$facet))
+demo$value <- demo$value * 100
+#demo$variable <- factor(x = demo$class, levels = unique(demo$class))
+
+png(
+  filename = "./outputGraphics/surveyDemographicsSmall.png",
+  width = 1400, height = 800, res = 300, units = "px"
+)
+ggplot(demo, aes(x = class, y = value, fill = variable)) + 
+  geom_col(
+    position = position_dodge2(reverse = FALSE, width = NULL, padding = 0),
+    width = 0.5, color = "black", size = 0.5
+  ) +
+  #scale_x_discrete(limits = rev) +
+  facet_wrap(facets = demo$facet, nrow = 1, scales = "free_x") +
+  ylab("relative frequency") +
+  #scale_fill_discrete(
+  scale_fill_viridis_d(
+    name = "", begin = 1, end = 0.5, #begin = 0.85, end = 0.1
+    labels = c(
+      "SFI reviewers\nN = 1591 (population)",
+      "survey respondents\nN = 310 (sample)"
+    )
+  ) +
+  scale_y_continuous(
+    limits = c(0,100), expand = c(0,0), breaks = c(0, 25, 50, 75, 100),
+    labels = c("0%", "25%", "50%", "75%", "100%")
+  ) +
+  theme(
+    plot.margin = margin(0, 0, 0, 0, "pt"),
+    panel.border = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(color = "gray85", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "gray95"),#element_blank(),
+    legend.position = "top",
+    legend.background = element_rect(fill = "gray95"),
+    strip.background = element_blank(),#element_rect(fill = "gray95"),
+    axis.title = element_blank(),
+    axis.line.y = element_line(colour = "black"),
+    axis.line.x = element_blank(),
+    axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
+dev.off()
 
 #a = s$q27$i[[1]]
 #b = s$q27$i[[3]]
@@ -124,30 +202,65 @@ mean(estim)
 # TC-mapping plots
 #
 topics <- data.frame(x = rep(0, times = 12), y = 1:12)
-criteria <- data.frame(x = c(1, 1, 1), y = c(4, 6, 8))
+criteria <- data.frame(x = c(1, 1, 1), y = c(3, 6, 9))
 edges <- data.frame(
   x = rep(0, times = 36),
-  xend = rep(1, times = 36),
+  xend = rep(0.9, times = 36),
   y = c(1:12),
-  yend = c(rep(4, times = 12), rep(6, times = 12), rep(8, times = 12))
+  yend = c(
+    (((-5:6) - 0.5) * 0.12) + 3,
+    (((-5:6) - 0.5) * 0.12) + 6,
+    (((-5:6) - 0.5) * 0.12) + 9
+  )
+  #yend = c(rep(4, times = 12), rep(6, times = 12), rep(8, times = 12))
 )
-
+nodeLabels <- data.frame(
+  x = c(0, 1),
+  y = c(13, 12),
+  lab = c("review topics", "evaluation criteria")
+)
+topicLabels <- data.frame(
+  x = rep(-0.1, times = 12),
+  y = 1:12,
+  lab = s$q27$topics
+)
+criteriaLabels <- data.frame(
+  x = rep(1.1, times = 3),
+  y = c(3, 6, 9),
+  lab = c("Potential for impact", "Proposed research", "Applicant")
+)
 
 png(
   filename = "./outputGraphics/TC-mapping.png",
-  width = 1500,
-  height = 1500,
+  width = 2000,
+  height = 1050,
   res = 300,
-  units = "px", bg = "transparent"
+  units = "px", bg = "white"#"transparent"
 )
 ggplot() +
   geom_segment(
     data = edges,
-    aes(x = x, xend = xend, y = y, yend = yend)
+    aes(x = x, xend = xend, y = y, yend = yend),# alpha = 0.9,
+    #arrow.fill = alpha("black", 0.1),
+    arrow = arrow(angle = 5, type = "closed", length = unit(7, "pt"))
   ) +
-  geom_point(data = topics, aes(x = x, y = y), size = 4) +
-  geom_point(data = criteria, aes(x = x, y = y), size = 4) +
+  geom_point(data = topics, aes(x = x, y = y), size = 4, color = "darkorange") +
+  geom_point(data = criteria, aes(x = x, y = y), size = 4, color="darkorange") +
+  geom_text(
+    data = nodeLabels, color = "darkorange1", 
+    aes(x = x, y = y, label = lab, fontface = 3)
+  ) +
+  geom_text(
+    data = topicLabels, hjust = 1,
+    aes(x = x, y = y, label = lab)
+  ) +
+  geom_text(
+    data = criteriaLabels, hjust = 0,
+    aes(x = x, y = y, label = lab)
+  ) +
+  coord_cartesian(clip = 'off') +
   theme(
+    plot.margin = unit(c(0, 6.5, 0, 16), "lines"),
     plot.background = element_blank(),
     panel.background = element_blank(),
     panel.grid = element_blank(),
@@ -161,17 +274,50 @@ dev.off()
 
 
 
-
-png(
-  filename = "./outputGraphics/TC-mapping2.png",
-  width = 5000,
-  height = 1500,
-  res = 300,
-  units = "px", bg = "transparent"
+edgeLabels <- data.frame(
+  x = c(-0.75, 0.5, 1.5, 2.75),
+  y = c(0, 1, 4, 5),
+  lab = c(
+    "reviewer perception can be\ndistorted by error and biases",
+    "reviewer's\nTC-mapping",
+    "aggregation",
+    "applying reviewer's\ngrading standards\nto find the appropriate grade"
+  )
 )
+nodeLabels <- data.frame(
+  x = c(-1.5, 0, 1, 2, 3.5),
+  y = c(13, 13, 9, 7.5, 7),
+  lab = c(
+    "proposal\nattributes",
+    "review topics",
+    "evaluation\ncriteria",
+    "reviewer's\noverall opinion",
+    "reviewer\nevaluation"
+  )
+)
+
+test <- data.frame(
+  x = c(2),
+  y = c(11), lab = c(
+    'paste("test\n", bold("grassetto"))'
+    #'expression("test\n", bold("grassetto"))'
+    #'expression("Hair " * phantom("color") ,col.main="red")'
+    #'#'atop(atop(bold("bold"),"plain"),"3rd line")')
+  )
+    
+)
+lab = c(
+  expression("nero arancio accapo")
+)
+
+#png(
+#  filename = "./outputGraphics/TC-mapping2.png",
+#  width = 5000, height = 1500,
+#  res = 300, units = "px", bg = "transparent"
+#)
 ggplot() +
-  geom_segment(aes(
-    x = rep(-1.5, times = 12), xend = rep(0, times = 12),
+  geom_segment(aes( # "reviewer perception"
+    x = rep(-1.5, times = 12), xend = rep(-0.05, times = 12),
     y = 1:12, yend = 1:12
   ), linetype = "dashed", color = "gray50",
   arrow = arrow(angle = 15, type = "closed", length = unit(10, "pt"))) +
@@ -180,12 +326,14 @@ ggplot() +
     aes(x = x, xend = xend, y = y, yend = yend)
   ) +
   geom_segment(
-    aes(x = c(1, 1, 1), xend = c(2,2,2), y = c(4, 6, 8), yend = c(6, 6, 6)),
+    aes(
+      x = c(1, 1, 1), xend = c(1.95, 1.95, 1.95),
+      y = c(4, 6, 8), yend = c(5.95, 6, 6.05)),
     color = "black",
-    arrow = arrow(angle = 5, type = "closed", length = unit(10, "pt"))
+    arrow = arrow(angle = 10, type = "closed", length = unit(10, "pt"))
   ) +
   geom_segment(
-    aes(x = 2, xend = 3.5, y = 6, yend = 6), color = "black",
+    aes(x = 2, xend = 3.45, y = 6, yend = 6), color = "black",
     arrow = arrow(angle = 15, type = "closed", length = unit(10, "pt"))
   ) +
   geom_point(
@@ -194,6 +342,20 @@ ggplot() +
   geom_point(
     data = criteria, aes(x = x, y = y), size = 4, color = "darkorange") +
   geom_point(aes(x = c(2, 3.5), y = c(6, 6)), size = 4, color = "darkorange") +
+  
+  geom_text(
+    data = test, parse = TRUE,
+    aes(x = x, y = y, label = lab)
+  ) +
+  
+  geom_text(
+    data = edgeLabels,# parse = TRUE,
+    aes(x = x, y = y, label = lab)
+  ) +
+  geom_text(
+    data = nodeLabels,
+    aes(x = x, y = y, label = lab)
+  ) +
   theme(
     plot.background = element_blank(),
     panel.background = element_blank(),
@@ -204,4 +366,4 @@ ggplot() +
     axis.ticks = element_blank()
   )
 
-dev.off()
+#dev.off()

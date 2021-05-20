@@ -268,7 +268,7 @@ hypermean <- function(scores, dampingOutliers = TRUE) {
       #y = rowSums(scores[,-rev], na.rm = TRUE), # sum of scores by the others
       y = rowSum, # sum of scores by the whole panel
       method = "spearman", # ranking correlation
-      use = "complete.obs"
+      use = "pairwise.complete.obs"
     ))
   }
   
@@ -276,7 +276,7 @@ hypermean <- function(scores, dampingOutliers = TRUE) {
   # with those of the rest of the panel) are to be given a low weight
   # (dampingOutliers == TRUE) or a high one (dampingOutliers == FALSE).
   ifelse (
-    dampingOutliers == TRUE, # if outliers must be dampened...
+    dampingOutliers == TRUE & !all(is.na(revWeights)), # if outliers must be dampened...
     revWeights <- (revWeights + 1) / 2, # ... then their weight is their corr.;
     revWeights <- 1 - ((revWeights + 1) / 2) # else, their weight is 1 - corr.
   )
@@ -286,10 +286,19 @@ hypermean <- function(scores, dampingOutliers = TRUE) {
   # causing there to be no variability in their judgment).
   revWeights[is.na(revWeights)] <- 0
   
+  # Then, we set to 1 all weights if they are all set to zero (if we didn't,
+  # an average would not be calculated).
+  if(sum(revWeights) == 0) revWeights = revWeights + 1
+  
   # Now it's time to aggregate all score by weighing reviewers.
   aggregatedScores <- c()
-  for (i in 1:nrow(scores)){aggregatedScores[i] <- 
-    weighted.mean(x = scores[i,], na.rm = TRUE, w = revWeights)}
+  for (i in 1:nrow(scores)){
+    aggr <- weighted.mean(x = scores[i,], na.rm = TRUE, w = revWeights)
+    
+    if(is.nan(aggr)) aggr <- mean(scores[i,], na.rm = TRUE)
+    
+    aggregatedScores[i] <- aggr
+  }
   
   return(aggregatedScores)
 }
@@ -297,78 +306,80 @@ hypermean <- function(scores, dampingOutliers = TRUE) {
 
 
 
-# The aggregation function takes as input a vector of reviewer's scores and
-# returns the aggregated score.
+# The aggregation function takes as input a matrix containing reviewers' grades
+# and returns a vector with the aggregated scores of each submission.
 aggregate <- function (
   scores,
   rule = "mean",
-  weights = NA,
-  criteriaWeightsError = 0,
-  reviewers = NA,
-  gradeLanguages = NA
+  w = NA
 ){
   aggregatedScores <- c()
   
-  if (rule == "mean"){
-    for (i in 1:nrow(scores)){aggregatedScores[i] <- 
-      mean(scores[i,], na.rm = TRUE)}
-  }
+  if (rule == "mean") aggregatedScores <- apply(
+    X = scores,
+    MARGIN = 1,
+    FUN = mean,
+    na.rm = TRUE
+  )
   
-  if (rule == "median"){
-    for (i in 1:nrow(scores)){aggregatedScores[i] <- 
-      median(scores[i,], na.rm = TRUE)}
-  }
+  if (rule == "median") aggregatedScores <- apply(
+    X = scores,
+    MARGIN = 1,
+    FUN = median,
+    na.rm = TRUE
+  )
   
   if (rule == "weightedMean"){
-    for (i in 1:nrow(scores)){
-      if (criteriaWeightsError == 0) {
-        aggregatedScores[i] <- weighted.mean(scores[i,], weights, na.rm = TRUE)
-      } else {
-        w <- weights + runif(
-          n=length(weights),
-          min= -criteriaWeightsError, max = criteriaWeightsError
-        )
-        aggregatedScores[i] <- weighted.mean(scores[i,], w, na.rm = TRUE)
+    if (is.na(w)) stop("Weighted mean aggregation: weights are missing")
+    aggregatedScores <- apply(
+      X = scores,
+      MARGIN = 1,
+      FUN = weighted.mean,
+      w = w,
+      na.rm = TRUE
+    )
+  }
+  
+  if (rule == "lowestScore") aggregatedScores <- apply(
+    X = scores,
+    MARGIN = 1,
+    FUN = min,
+    na.rm = TRUE
+  )
+  
+  if (rule == "highestScore") aggregatedScores <- apply(
+    X = scores,
+    MARGIN = 1,
+    FUN = max,
+    na.rm = TRUE
+  )
+  
+  if (rule == "excludeExtremes" | rule == "trimmedMean"){
+    aggregatedScores <- apply(
+      X = scores,
+      MARGIN = 1,
+      FUN = function(x) {
+        x <- x[!is.na(x)]
+        len <- length(x)
+        
+        # If there are more than three reviews take the mean excluding (one of)
+        # the minimum grades and (one of) the maximum grades. Else, just take
+        # the mean:
+        ifelse(len > 3, return(mean(sort(x)[c(-1, -len)])), return(mean(x)))
       }
-    }
+    )
   }
   
-  if (rule == "lowestScore"){
-    for (i in 1:nrow(scores)){aggregatedScores[i] <- 
-      min(scores[i,], na.rm = TRUE)}
-  }
+  if (rule == "majorityJudgement") aggregatedScores <-
+      calcMajorityJudgement(scores)$majorityJudgment
   
-  if (rule == "excludeExtremes"){
-    for (i in 1:nrow(scores)){
-      x <- scores[i,]
-      x <- x[!is.na(x)]
-      len <- length(x)
-      
-      ifelse(
-        
-        # if there are more than three reviews...
-        len > 3,
-        
-        # ... take the mean excluding (one of) the minimum grades and (one of)
-        # the maximum grades...
-        aggregatedScores[i] <- mean(sort(x)[c(-1, -len)]),
-        
-        # ... else just take the mean.
-        aggregatedScores[i] <- mean(x)
-      )
-    }
-  }
-  
-  if (rule == "majorityJudgement"){
-    aggregatedScores <- calcMajorityJudgement(scores)$majorityJudgment
-  }
-  
-  if (rule == "bordaCount"){
-    aggregatedScores <- modifiedBordaCount(scores)$bordaCount
-  }
+  if (rule == "bordaCount") aggregatedScores <-
+      modifiedBordaCount(scores)$bordaCount
   
   return(aggregatedScores)
 }
+
+
 
 
 # Outcome measure ______________________________________________________________
