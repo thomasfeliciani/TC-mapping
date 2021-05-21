@@ -65,10 +65,14 @@ simulation <- function(
   # Here we define the "standard" grade language, to which reviewers will later
   # try to comply more-or-less accurately (due to their own understanding of
   # the grading language).
-  GLthresholds <- c()
-  for (l in 1:(gradingScale - 1)){
-    GLthresholds[l] <- 1 - ((3 / 5) ^ l) 
-  }
+  #GLthresholds <- c()
+  #for (l in 1:(gradingScale - 1)){
+  #  GLthresholds[l] <- 1 - ((3 / 5) ^ l) 
+  #}
+  GLthresholds <- qbeta(
+    1:(gradingScale - 1) / gradingScale,
+    shape1 = 2, shape2 = 1
+  )
   
   
   # We also create a "template" TC-mapping from which each reviewer's own
@@ -127,13 +131,12 @@ simulation <- function(
     
     # Reviewer initialization: interpretation of the GL_________________________
     # We determine the reviewer's own interpretation of the grading language:
-    gl <- sapply(1:(gradingScale - 1), FUN = function(i){
-      truncate(rnorm( # Equation 3
-        n = 1,
-        mean = GLthresholds[i],
-        sd = GLdiversity * (1 - ((i - 1) / gradingScale))
-      ))
-    })
+    gl <- truncate(rnorm(
+      n = gradingScale - 1,
+      mean = GLthresholds,
+      sd = GLdiversity
+    ))
+    
     # Last, we order all thresholds in increasing order:
     reviewers[[r]]$gl <- gl[order(gl)]
     
