@@ -13,11 +13,13 @@ simulation <- function(
   nReviewers = 5,
   nProposals = 10,
   attributeMean = 0.5,
-  attributeSD = 0.3,
+  attributeSD = 0.2,
   attributeCorr = 0.5,
   nTopics = 5,
   nCriteria = 4,
-  reviewerNoise = 0.2, # influences reviewer error and bias
+  reviewerError = 0.2,
+  reviewerBiasDiversity = 0.2,
+  #reviewerNoise = 0.2, # influences reviewer error and bias
   GLdiversity = 0.2,
   gradingScale = 5, # number of categories in the evaluation scale
   TCMswapping = 0.2,
@@ -32,7 +34,9 @@ simulation <- function(
     attributeCorr = attributeCorr,
     nTopics = nTopics,
     nCriteria = nCriteria,
-    reviewerNoise = reviewerNoise,
+    reviewerError = reviewerError,
+    reviewerBiasDiversity = reviewerBiasDiversity,
+    #reviewerNoise = reviewerNoise,
     GLdiversity = GLdiversity,
     gradingScale = gradingScale,
     TCMswapping = TCMswapping
@@ -50,7 +54,7 @@ simulation <- function(
     r = attributeCorr,
     as.matrix = TRUE
   )
-  proposals <- t(apply(X = proposals, MARGIN = 1, FUN = truncate))
+  proposals <- apply(X = proposals, MARGIN = 2, FUN = truncate)
   
   
   ###################################
@@ -121,10 +125,10 @@ simulation <- function(
     reviewers[[r]]$bias <- rnorm(
       n = 1,
       mean = 0,
-      sd = reviewerNoise
+      sd = reviewerBiasDiversity
     )
     
-    reviewers[[r]]$error <- reviewerNoise
+    reviewers[[r]]$error <- reviewerError
     #rnorm(n = nTopics, mean = 0, sd = reviewerNoise)
     #rep(reviewerNoise, times = nTopics)
     
@@ -331,7 +335,9 @@ if (FALSE) {
     attributeCorr = 0.5,
     nTopics = 5,
     nCriteria = 4,
-    reviewerNoise = 0.2,
+    reviewerError = 0.2,
+    reviewerBiasDiversity = 0.2,
+    #reviewerNoise = 0.2,
     GLdiversity = 0.2,
     gradingScale = 5,
     TCMswapping = 0.2,

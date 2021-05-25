@@ -2,7 +2,9 @@
 # parameter space. Sourcing this script is not advised, as it will take 
 # several hours to complete the task.
 
-# Cleaning environment and loading resources:
+# ______________________________________________________________________________
+# Cleaning environment and loading resources.
+
 rm (list = ls( ))
 source("simulation.r")
 library("compiler")
@@ -11,25 +13,75 @@ library("doSNOW")
 load("./data/pTCM.RData") # This contains the weights for a TC-mapping template.
 
 
-nRepetitions <- 2
-#nRepetitions <- 1 # repetitions per execution
 
+# ______________________________________________________________________________
+# Defining the parameter space to be explored. 
+
+nRepetitions <- 500 # repetitions per execution
 
 battery <- expand.grid(
   nReviewers = 5,
   nProposals = 10,
   attributeMean = 0.75,
-  attributeSD = c(0.1, 0.5),
+  attributeSD = 0.2,
   attributeCorr = c(0, 0.5),
-  nTopics = c(5, 10, 12, 15, 20),
-  nCriteria = 2:5,
-  reviewerNoise = c(0, 0.1, 0.2),
+  nTopics = c(6, 12, 24),
+  nCriteria = c(2, 3, 5),
+  reviewerError = c(0, 0.1, 0.2),
+  reviewerBiasDiversity = c(0, 0.1, 0.2),
+  #reviewerNoise = c(0, 0.1, 0.2),
   GLdiversity = c(0, 0.1, 0.2),
   gradingScale = c(2, 5, 10),
   TCMswapping = 0.1 * 0:5
 )
-#battery <- battery[51:100,]##############################
 
+
+# Removing parameter configurations that differ from the baseline from more than
+# two dimensions. This considerably reduces the parameter space that needs to 
+# be simulated.
+# To do this, we first define a baseline parameter configuration:
+baseline = c(
+  nReviewers = 5,
+  nProposals = 10,
+  attributeMean = 0.75,
+  attributeSD = 0.2,
+  attributeCorr = 0.5,
+  nTopics = 12,
+  nCriteria = 3,
+  reviewerError = 0.1,
+  reviewerBiasDiversity = 0.1,
+  #reviewerNoise = c(0, 0.1, 0.2),
+  GLdiversity = 0.1,
+  gradingScale = 5#,
+  #TCMswapping = 0.1 * 0:5
+)
+
+# Then, for each parameter configuration in the data.frame battery, we count
+# how many differences there are, and we discard runs that have more than 3
+# differences.
+variables <- c(
+  "nReviewers", "nProposals", "attributeMean", "attributeSD", "attributeCorr",
+  "nTopics", "nCriteria", "reviewerError", "reviewerBiasDiversity",
+  "GLdiversity", "gradingScale")
+closeToBaseline <- apply(
+  X = battery,
+  MARGIN = 1,
+  FUN = function(x) {
+    nDiff <- sum(x[variables] != baseline) # tally of differences from baseline
+    ifelse(nDiff > 3, return(FALSE), return(TRUE))
+  }
+)
+battery <- battery[closeToBaseline,]
+#battery <- battery[51:100,] # This shortens the battery further (for testing).
+
+
+
+# ______________________________________________________________________________
+# Running simulation batteries.
+#
+# Next, we define how to simulate a single battery. "Battery" here refers to a
+# single parameter configuration, i.e. a single line from the "battery"
+# data.frame.
 runBattery <- function(battery) {
   
   battery$seed <- sample(
@@ -52,7 +104,9 @@ runBattery <- function(battery) {
         attributeCorr = as.numeric(x["attributeCorr"]),
         nTopics = as.numeric(x["nTopics"]),
         nCriteria = as.numeric(x["nCriteria"]),
-        reviewerNoise = as.numeric(x["reviewerNoise"]),
+        reviewerError = as.numeric(x["reviewerError"]),
+        reviewerBiasDiversity = as.numeric(x["reviewerBiasDiversity"]),
+        #reviewerNoise = as.numeric(x["reviewerNoise"]),
         GLdiversity = as.numeric(x["GLdiversity"]),
         gradingScale = as.numeric(x["gradingScale"]),
         TCMswapping = as.numeric(x["TCMswapping"]),
@@ -65,7 +119,7 @@ runBattery <- function(battery) {
 }
 
 
-
+# Now we are ready to run multiple batteries in parallel.
 print(paste("Simulation battery started on", Sys.time()))
 enableJIT(1)
 cl <- snow::makeCluster(
@@ -89,12 +143,13 @@ print(paste("Simulation battery completed on", Sys.time()))
 
 
 
+# ______________________________________________________________________________
+# Saving results to file
 
-# Saving results to file________________________________________________________
 save(
   file = "./output/ri.RData",
   ri, battery
 )
 
-print(object.size(ri), units="Mb")
+print(object.size(ri), units = "Mb")
 
