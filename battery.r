@@ -32,7 +32,7 @@ battery <- expand.grid(
   #reviewerNoise = c(0, 0.1, 0.2),
   GLdiversity = c(0, 0.1, 0.2),
   gradingScale = c(2, 5, 10),
-  TCMswapping = 0.1 * 0:5
+  TCMswapping = c(0, 0.05, 0.1, 0.2, 0.4)
 )
 
 
@@ -50,7 +50,6 @@ baseline = c(
   nCriteria = 3,
   reviewerError = 0.1,
   reviewerBiasDiversity = 0.1,
-  #reviewerNoise = c(0, 0.1, 0.2),
   GLdiversity = 0.1,
   gradingScale = 5#,
   #TCMswapping = 0.1 * 0:5

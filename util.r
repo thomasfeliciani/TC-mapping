@@ -449,6 +449,39 @@ kendallTauDistance <- function(x,y){
 }
 
 
+# Plotting _____________________________________________________________________
+plotParameter <- function(
+  data, dep, deplabel, indep, indeplabel, facetby, facetlabel  
+){
+  db <- data.frame(
+    x = as.factor(data[,indep]),
+    y = data[,dep],
+    facetby = as.factor(data[,facetby])
+  )
+  ggplot(data = db, aes(x = x, y = y, color = x, fill = x)) +
+    geom_violin(width = 0.6) +
+    geom_boxplot(color = "black", alpha = 0, width = 0.6) +
+    facet_grid(cols = vars(facetby)) +
+    scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
+    scale_fill_viridis_d(begin = 0.5, end = 0.92, option = "A") +
+    labs(x = indeplabel, y = deplabel, title = facetlabel) +
+    theme(
+      plot.background = element_rect(fill = "transparent", color = NA),
+      panel.background = element_rect(fill = "gray96"),
+      panel.border = element_blank(),
+      panel.grid.major.x = element_line(color = "gray90"),
+      panel.grid.major.y = element_line(color = "gray90"),
+      panel.grid.minor = element_blank(),
+      strip.background = element_rect(fill = "gray25", color = NA),
+      strip.text = element_text(color = "white"),
+      axis.line = element_line(size = 1),
+      legend.position = "NA"
+    )
+}
+
+
+
+
 # Miscellanea __________________________________________________________________
 truncate <- function(x, min = 0, max = 1){
   if (length(x) > 1) {return(sapply(x, truncate, min = min, max = max))}

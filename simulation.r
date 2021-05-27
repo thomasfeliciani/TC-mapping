@@ -157,6 +157,7 @@ simulation <- function(
     # Then we start swapping random couples of links.
     swaps <- 0
     repeat{
+      if(swaps >= nSwaps) break
       linksToSwap <- sample(
         1:(nTopics * nCriteria),
         size = 2,
@@ -165,7 +166,6 @@ simulation <- function(
       tcm[linksToSwap] <- tcm[rev(linksToSwap)]
       
       swaps <- swaps + 1
-      if(swaps >= nSwaps) break
     }
     rm(nSwaps, swaps)
     
@@ -291,15 +291,21 @@ simulation <- function(
   if(is.nan(spearmanRho)) spearmanRho <- NA
   
   
+  
   # Last, we also check to what degree the review panel *as a whole* was able
   # to estimate the ranking of proposals. Proposal ranking is inferred from
   # the average of their attribute values.
-  rankingPerf <- suppressWarnings(cor(
-    x = apply(X = proposals, MARGIN = 1, FUN = mean),
-    y = apply(X = overallGrades, MARGIN = 1, FUN = mean, na.rm = TRUE),
-    method = "spearman",
-    use = "pairwise.complete.obs"
-  ))
+  meanGrades <- apply(X = overallGrades, MARGIN = 1, FUN = mean, na.rm = TRUE)
+  ifelse(
+    length(table(meanGrades)) == 1, # If the panel didn't make any distictions..
+    rankingPerf <- 0,
+    rankingPerf <- suppressWarnings(cor(
+      x = apply(X = proposals, MARGIN = 1, FUN = mean),
+      y = meanGrades,
+      method = "spearman",
+      use = "pairwise.complete.obs"
+    ))
+  )
   
   
   
@@ -327,7 +333,7 @@ simulation <- function(
 #_______________________________________________________________________________
 if (FALSE) {
   sim <- simulation(
-    seed = 12345,#sample(-99999999:99999999, size = 1),
+    seed = 12345,
     nReviewers = 5,
     nProposals = 10,
     attributeMean = 0.5,
@@ -337,10 +343,9 @@ if (FALSE) {
     nCriteria = 4,
     reviewerError = 0.2,
     reviewerBiasDiversity = 0.2,
-    #reviewerNoise = 0.2,
     GLdiversity = 0.2,
     gradingScale = 5,
-    TCMswapping = 0.2,
+    TCMswapping = 0,
     pTCM = NULL
   )
 }
