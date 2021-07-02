@@ -458,9 +458,9 @@ plotParameter <- function(
     y = data[,dep],
     facetby = as.factor(data[,facetby])
   )
-  ggplot(data = db, aes(x = x, y = y, color = x, fill = x)) +
-    geom_violin(width = 0.6) +
-    geom_boxplot(color = "black", alpha = 0, width = 0.6) +
+  ggplot(data = db, aes(x = x, y = y, fill = x)) +
+    geom_violin(color = "gray80", fill = "gray80", width = 0.8) +
+    geom_boxplot(width = 0.3) +
     facet_grid(cols = vars(facetby)) +
     scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
     scale_fill_viridis_d(begin = 0.5, end = 0.92, option = "A") +
@@ -469,8 +469,7 @@ plotParameter <- function(
       plot.background = element_rect(fill = "transparent", color = NA),
       panel.background = element_rect(fill = "gray96"),
       panel.border = element_blank(),
-      panel.grid.major.x = element_line(color = "gray90"),
-      panel.grid.major.y = element_line(color = "gray90"),
+      panel.grid.major = element_line(color = "gray90"),
       panel.grid.minor = element_blank(),
       strip.background = element_rect(fill = "gray25", color = NA),
       strip.text = element_text(color = "white"),
