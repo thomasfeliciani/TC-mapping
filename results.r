@@ -622,11 +622,54 @@ rii <- ri[closeToBaseline,]
 
 
 
+
 # Figure 7 _____________________________________________________________________
 # baseline: TCMswapping and IRR
 #
 figureParameters <- list(
   filename = paste0("./outputGraphics/figure 7.", exportFormat),
+  width = 1400,
+  height = 1000,
+  res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+
+ggplot(
+  data = rii, aes(x = TCMdiversity, y = ICC, color = as.factor(TCMswapping))
+) +
+  geom_vline( # reference line (TCMdiversity at SFI)
+    xintercept = 0.3696205, linetype = 2, color = "black"
+  ) +
+  geom_point(size = 0.8) +
+  scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
+  labs(
+    x = "TC-mapping heterogeneity\n(average normalized Hamming distance)",
+    y = "inter-rater reliability (ICC)",
+    color = "ρ"
+  ) +
+  scale_y_continuous(limits = c(0,1)) +
+  theme(
+    panel.background = element_blank(),
+    plot.background = element_rect(fill="transparent", color=NA),
+    panel.border = element_blank(),#rect(fill="transparent", color="gray50"),
+    panel.grid.major.x = element_line(color = "gray95"),
+    panel.grid.major.y = element_line(color = "gray95"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(size = 1)#,
+    #legend.position = "NA"
+  )
+
+dev.off()
+
+
+
+
+# Figure 8 _____________________________________________________________________
+# baseline: TCMswapping and IRR
+#
+figureParameters <- list(
+  filename = paste0("./outputGraphics/figure 8.", exportFormat),
   width = 1000,
   height = 1000,
   res = 300, units = "px"
@@ -659,49 +702,6 @@ ggplot(
     panel.grid.minor = element_blank(),
     axis.line = element_line(size = 1),
     legend.position = "NA"
-  )
-
-dev.off()
-
-
-
-
-
-# Figure 8 _____________________________________________________________________
-# baseline: TCMswapping and IRR
-#
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 8.", exportFormat),
-  width = 1400,
-  height = 1000,
-  res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-
-ggplot(
-  data = rii, aes(x = TCMdiversity, y = ICC, color = as.factor(TCMswapping))
-) +
-  geom_vline( # reference line (TCMdiversity at SFI)
-    xintercept = 0.3696205, linetype = 2, color = "black"
-  ) +
-  geom_point(size = 0.8) +
-  scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
-  labs(
-    x = "TC-mapping heterogeneity\n(average normalized Hamming distance)",
-    y = "inter-rater reliability (ICC)",
-    color = "ρ"
-  ) +
-  scale_y_continuous(limits = c(0,1)) +
-  theme(
-    panel.background = element_blank(),
-    plot.background = element_rect(fill="transparent", color=NA),
-    panel.border = element_blank(),#rect(fill="transparent", color="gray50"),
-    panel.grid.major.x = element_line(color = "gray95"),
-    panel.grid.major.y = element_line(color = "gray95"),
-    panel.grid.minor = element_blank(),
-    axis.line = element_line(size = 1)#,
-    #legend.position = "NA"
   )
 
 dev.off()
