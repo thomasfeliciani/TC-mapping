@@ -466,6 +466,7 @@ plotParameter <- function(
     scale_fill_viridis_d(begin = 0.5, end = 0.92, option = "A") +
     labs(x = indeplabel, y = deplabel, title = facetlabel) +
     theme(
+      plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
       plot.background = element_rect(fill = "transparent", color = NA),
       panel.background = element_rect(fill = "gray96"),
       panel.border = element_blank(),

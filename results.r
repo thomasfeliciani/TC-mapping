@@ -81,7 +81,7 @@ figure2 <- ggarrange(
 #plot(figure2)
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 1.", exportFormat),
+  filename = paste0("./outputGraphics/Figure_1.", exportFormat),
   width = 2000,
   height = 700,
   units = "px",
@@ -146,7 +146,7 @@ criteriaLabels <- data.frame(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 2.", exportFormat),
+  filename = paste0("./outputGraphics/Figure_2.", exportFormat),
   width = 2000,
   height = 1050,
   units = "px",
@@ -216,7 +216,7 @@ df <- reshape::melt(df, id.vars = "topic")
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 3.", exportFormat),
+  filename = paste0("./outputGraphics/Figure_3.", exportFormat),
   width = 1400,
   height = 1100,
   res = 300, units = "px"
@@ -276,7 +276,7 @@ edgeLabels <- data.frame(
     "reviewer perception distorted by\n", #error and biases
     "reviewer's\n", # TC-mapping
     "aggregation",
-    "applying reviewer's\n\nto find the appropriate grade" # grading standards
+    "reviewer's\n\n" # grading standards
   )
 )
 edgeLabelsAccent <- data.frame(
@@ -286,7 +286,7 @@ edgeLabelsAccent <- data.frame(
     "\nerror and biases",
     "\nTC-mapping",
     "",
-    "\ngrading standards\n"
+    "\ninterpretation of\nthe grading language"
   )
 )
 nodeLabels <- data.frame(
@@ -297,13 +297,13 @@ nodeLabels <- data.frame(
     "review topics",
     "evaluation\ncriteria",
     "reviewer's\noverall opinion",
-    "reviewer\nevaluation"
+    "review\ngrade"
   )
 )
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 4.", exportFormat),
+  filename = paste0("./outputGraphics/Figure_4.", exportFormat),
   width = 2300,
   height = 1200,
   units = "px",
@@ -375,7 +375,7 @@ gradePos = sapply(1:5, function(x){th = c(0, th, 1); return(mean(th[x:(x+1)]))})
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 5.", exportFormat),
+  filename = paste0("./outputGraphics/Figure_5.", exportFormat),
   width = 1200,
   height = 350,
   units = "px",
@@ -553,7 +553,7 @@ figure6 <- ggarrange(
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 6.", exportFormat),
+  filename = paste0("./outputGraphics/Figure_6.", exportFormat),
   width = 1000,
   height = 1000,
   units = "px",
@@ -627,7 +627,7 @@ rii <- ri[closeToBaseline,]
 # baseline: TCMswapping and IRR
 #
 figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 7.", exportFormat),
+  filename = paste0("./outputGraphics/Figure_7.", exportFormat),
   width = 1400,
   height = 1000,
   res = 300, units = "px"
@@ -642,6 +642,10 @@ ggplot(
     xintercept = 0.3696205, linetype = 2, color = "black"
   ) +
   geom_point(size = 0.8) +
+  geom_text(
+    aes(x = 0.35, y = 0.9, angle = 90), color = "black", size = 3,
+    label = "SFI reviewers"
+  ) +
   scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
   labs(
     x = "TC-mapping heterogeneity\n(average normalized Hamming distance)",
@@ -669,7 +673,7 @@ dev.off()
 # baseline: TCMswapping and IRR
 #
 figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 8.", exportFormat),
+  filename = paste0("./outputGraphics/Figure_8.", exportFormat),
   width = 1000,
   height = 1000,
   res = 300, units = "px"
@@ -707,407 +711,16 @@ ggplot(
 dev.off()
 
 
+# Note: for Figures 9 and 10 scroll down to Appendix C.
 
-
-
-################################################################################
-################################################################################
-# Appendix B
-# Exploring parameter space
-#
-#
-#
-# ______________________________________________________________________________
-# Number of topics/attributes (N)
-#
-focusVariable = "nTopics"
-#focusVariable = ""
-
-closeToBaseline <- apply(
-  X = ri,
-  MARGIN = 1,
-  FUN = function(x) {
-    ifelse(
-      any(x[variables[variables != focusVariable]] !=
-            as.data.frame(t(baseline[variables != focusVariable]))),
-      return(FALSE),
-      return(TRUE)
-    )
-  }
-)
-rii <- ri[closeToBaseline,]
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B1a.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "number of topics (N)"
-)
-dev.off()
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B1b.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "spearmanRho", deplabel = "inter-rater reliability (Spearman)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "number of topics (N)"
-)
-dev.off()
-
-
-
-
-# ______________________________________________________________________________
-# Number of evaluation criteria (C)
-#
-focusVariable = "nCriteria"
-
-closeToBaseline <- apply(
-  X = ri,
-  MARGIN = 1,
-  FUN = function(x) {
-    ifelse(
-      any(x[variables[variables != focusVariable]] !=
-            as.data.frame(t(baseline[variables != focusVariable]))),
-      return(FALSE),
-      return(TRUE)
-    )
-  }
-)
-rii <- ri[closeToBaseline,]
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B2a.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "number of evaluation criteria (C)"
-)
-dev.off()
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B2b.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "spearmanRho", deplabel = "inter-rater reliability (Spearman)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "number of evaluation criteria (C)"
-)
-dev.off()
-
-
-
-
-# ______________________________________________________________________________
-# Attribute correlation (r)
-#
-focusVariable = "attributeCorr"
-
-closeToBaseline <- apply(
-  X = ri,
-  MARGIN = 1,
-  FUN = function(x) {
-    ifelse(
-      any(x[variables[variables != focusVariable]] !=
-            as.data.frame(t(baseline[variables != focusVariable]))),
-      return(FALSE),
-      return(TRUE)
-    )
-  }
-)
-rii <- ri[closeToBaseline,]
-
-figure9 <- plotParameter(
-  data = rii,
-  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "attribute correlation (r)"
-)
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure 9.", exportFormat),
-  width = 1100, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plot(figure9)
-dev.off()
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B3a.", exportFormat),
-  width = 1100, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plot(figure9)
-dev.off()
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B3b.", exportFormat),
-  width = 1100, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "spearmanRho", deplabel = "inter-rater reliability (Spearman)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "attribute correlation (r)"
-)
-dev.off()
-
-
-
-
-# ______________________________________________________________________________
-# Reviewer error (E)
-#
-focusVariable = "reviewerError"
-
-closeToBaseline <- apply(
-  X = ri,
-  MARGIN = 1,
-  FUN = function(x) {
-    ifelse(
-      any(x[variables[variables != focusVariable]] !=
-            as.data.frame(t(baseline[variables != focusVariable]))),
-      return(FALSE),
-      return(TRUE)
-    )
-  }
-)
-rii <- ri[closeToBaseline,]
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B4a.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "reviewer error (E)"
-)
-dev.off()
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B4b.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "spearmanRho", deplabel = "inter-rater reliability (Spearman)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "reviewer error (E)"
-)
-dev.off()
-
-
-
-
-# ______________________________________________________________________________
-# Reviewer bias diversity (λ)
-#
-focusVariable = "reviewerBiasDiversity"
-
-closeToBaseline <- apply(
-  X = ri,
-  MARGIN = 1,
-  FUN = function(x) {
-    ifelse(
-      any(x[variables[variables != focusVariable]] !=
-            as.data.frame(t(baseline[variables != focusVariable]))),
-      return(FALSE),
-      return(TRUE)
-    )
-  }
-)
-rii <- ri[closeToBaseline,]
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B5a.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "diversity in reviewer bias (λ)"
-)
-dev.off()
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B5b.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "spearmanRho", deplabel = "inter-rater reliability (Spearman)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "diversity in reviewer bias (λ)"
-)
-dev.off()
-
-
-
-
-# ______________________________________________________________________________
-# Grading scale granularity (s)
-#
-focusVariable = "gradingScale"
-
-closeToBaseline <- apply(
-  X = ri,
-  MARGIN = 1,
-  FUN = function(x) {
-    ifelse(
-      any(x[variables[variables != focusVariable]] !=
-            as.data.frame(t(baseline[variables != focusVariable]))),
-      return(FALSE),
-      return(TRUE)
-    )
-  }
-)
-rii <- ri[closeToBaseline,]
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B6a.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "grading scale granularity (s)"
-)
-dev.off()
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B6b.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "spearmanRho", deplabel = "inter-rater reliability (Spearman)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "grading scale granularity (s)"
-)
-dev.off()
-
-
-
-
-# ______________________________________________________________________________
-# Grading language heterogeneity (h)
-#
-focusVariable = "GLdiversity"
-
-closeToBaseline <- apply(
-  X = ri,
-  MARGIN = 1,
-  FUN = function(x) {
-    ifelse(
-      any(x[variables[variables != focusVariable]] !=
-            as.data.frame(t(baseline[variables != focusVariable]))),
-      return(FALSE),
-      return(TRUE)
-    )
-  }
-)
-rii <- ri[closeToBaseline,]
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B7a.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "diversity in grading language interpretations (h)"
-)
-dev.off()
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/figure B7b.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "spearmanRho", deplabel = "inter-rater reliability (Spearman)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = "diversity in grading language interpretations (h)"
-)
-dev.off()
 
 
 
 
 ################################################################################
 ################################################################################
-# Appendix A
+#
+# Appendix A ___________________________________________________________________
 # Survey data: TC-mapping heterogeneity among SFI reviewers
 #
 #
@@ -1152,7 +765,7 @@ demo$value <- demo$value * 100
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/figure A1.", exportFormat),
+  filename = paste0("./outputGraphics/Figure_A1.", exportFormat),
   width = 1600,
   height = 800,
   units = "px",
@@ -1198,6 +811,488 @@ ggplot(demo, aes(x = class, y = value, fill = variable)) +
     axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 
 dev.off()
+
+
+################################################################################
+################################################################################
+#
+# Appendix B ___________________________________________________________________
+th <- qbeta(1:4 / 5, shape1 = 2, shape2 = 1) * 100
+df <- rbind(
+  data.frame(
+    x = s$i$q34,
+    th = rep(
+      "1st threshold: between\n'very low quality' and 'average'",
+      times = length(s$i$q34)
+  )),
+  data.frame(
+  x = s$i$q33,
+  th = rep(
+    "4th threshold: between\n'very good' and 'outstanding'",
+    times = length(s$i$q33)
+  ))
+)
+
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_B1.", exportFormat),
+  width = 1250,
+  height = 700,
+  units = "px",
+  res = 300
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+
+ggplot(df, aes(x = x, fill = th)) +
+  geom_histogram(breaks = 0:10 * 10, color = "black", position = "dodge") +
+  #geom_vline(xintercept = th, linetype = 2, color = "black") +
+  facet_grid(cols = vars(th)) +
+  scale_fill_viridis_d(name = "", begin = 0.85, end = 0.4, option = "A") +
+  scale_x_continuous(breaks = 0:10 * 10, labels = function(x){paste0(x, "%")}) +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(x = "quality percentage", y = "frequency") +
+  theme(
+    plot.margin = margin(0, 0, 0, 0, "pt"),
+    panel.border = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "gray95"),
+    legend.position = "NA",
+    legend.background = element_rect(fill = "gray95"),
+    strip.background = element_blank(),#element_rect(fill = "gray95"),
+    #axis.title = element_blank(),
+    axis.line.y = element_line(colour = "black"),
+    axis.line.x = element_blank(),
+    axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 7))
+
+dev.off()
+
+
+
+
+
+################################################################################
+################################################################################
+# Appendix C ___________________________________________________________________
+# Exploring parameter space
+#
+#
+#
+# ______________________________________________________________________________
+# Number of topics/attributes (N)
+#
+focusVariable = "nTopics"
+focusVariableLab = "number of topics (N)"
+#focusVariable = ""
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] !=
+            as.data.frame(t(baseline[variables != focusVariable]))),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
+fig <- ggpubr::ggarrange(
+  plotParameter(
+    data = rii,
+    dep = "ICC", deplabel = "IRR (ICC)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = focusVariableLab
+  ),
+  plotParameter(
+    data = rii,
+    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    indep = "TCMswapping",
+    indeplabel = "TC-mapping heterogeneity (ρ)",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  ncol = 1, hjust = -1, align = "hv"
+)
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_C1.", exportFormat),
+  width = 1500, height = 1200, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+print(fig)
+dev.off()
+
+
+
+
+
+# ______________________________________________________________________________
+# Number of evaluation criteria (C)
+#
+focusVariable = "nCriteria"
+focusVariableLab = "number of evaluation criteria (C)"
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] !=
+            as.data.frame(t(baseline[variables != focusVariable]))),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
+
+fig <- ggpubr::ggarrange(
+  plotParameter(
+    data = rii,
+    dep = "ICC", deplabel = "IRR (ICC)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = focusVariableLab
+  ),
+  plotParameter(
+    data = rii,
+    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    indep = "TCMswapping",
+    indeplabel = "TC-mapping heterogeneity (ρ)",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  ncol = 1, hjust = -1, align = "hv"
+)
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_C2.", exportFormat),
+  width = 1500, height = 1200, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+print(fig)
+dev.off()
+
+
+
+
+
+# ______________________________________________________________________________
+# Reviewer error (E)
+#
+focusVariable = "reviewerError"
+focusVariableLab = "reviewer error (\u0190)"
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] !=
+            as.data.frame(t(baseline[variables != focusVariable]))),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
+fig <- ggpubr::ggarrange(
+  plotParameter(
+    data = rii,
+    dep = "ICC", deplabel = "IRR (ICC)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = focusVariableLab
+  ),
+  plotParameter(
+    data = rii,
+    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    indep = "TCMswapping",
+    indeplabel = "TC-mapping heterogeneity (ρ)",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  ncol = 1, hjust = -1, align = "hv"
+)
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_C3.", exportFormat),
+  width = 1500, height = 1200, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+print(fig)
+dev.off()
+
+
+
+
+
+# ______________________________________________________________________________
+# Reviewer bias diversity (λ)
+#
+focusVariable = "reviewerBiasDiversity"
+focusVariableLab = "diversity in reviewer bias (λ)"
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] !=
+            as.data.frame(t(baseline[variables != focusVariable]))),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
+fig <- ggpubr::ggarrange(
+  plotParameter(
+    data = rii,
+    dep = "ICC", deplabel = "IRR (ICC)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = focusVariableLab
+  ),
+  plotParameter(
+    data = rii,
+    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    indep = "TCMswapping",
+    indeplabel = "TC-mapping heterogeneity (ρ)",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  ncol = 1, hjust = -1, align = "hv"
+)
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_C4.", exportFormat),
+  width = 1500, height = 1200, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+print(fig)
+dev.off()
+
+
+
+
+
+# ______________________________________________________________________________
+# Grading language heterogeneity (h)
+#
+focusVariable = "GLdiversity"
+focusVariableLab = "diversity in grading language interpretations (h)"
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] !=
+            as.data.frame(t(baseline[variables != focusVariable]))),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
+fig <- ggpubr::ggarrange(
+  plotParameter(
+    data = rii,
+    dep = "ICC", deplabel = "IRR (ICC)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = focusVariableLab
+  ),
+  plotParameter(
+    data = rii,
+    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    indep = "TCMswapping",
+    indeplabel = "TC-mapping heterogeneity (ρ)",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  ncol = 1, hjust = -1, align = "hv"
+)
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_C5.", exportFormat),
+  width = 1500, height = 1200, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+print(fig)
+dev.off()
+
+
+
+
+
+# ______________________________________________________________________________
+# Attribute correlation (r)
+#
+focusVariable = "attributeCorr"
+focusVariableLab = "attribute correlation (r)"
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] !=
+            as.data.frame(t(baseline[variables != focusVariable]))),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
+
+fig <- ggpubr::ggarrange(
+  plotParameter(
+    data = rii,
+    dep = "ICC", deplabel = "IRR (ICC)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = focusVariableLab
+  ),
+  plotParameter(
+    data = rii,
+    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    indep = "TCMswapping",
+    indeplabel = "TC-mapping heterogeneity (ρ)",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  ncol = 1, hjust = -1, align = "hv"
+)
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_C6.", exportFormat),
+  width = 1100, height = 1200, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+print(fig)
+dev.off()
+
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_9.", exportFormat),
+  width = 1100, height = 700, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+plotParameter(
+  data = rii,
+  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
+  indep = "TCMswapping",
+  indeplabel = "TC-mapping heterogeneity (ρ)",
+  facetby = focusVariable,
+  facetlabel = focusVariableLab
+)
+dev.off()
+
+
+
+
+
+# ______________________________________________________________________________
+# Grading scale granularity (s)
+#
+focusVariable = "gradingScale"
+focusVariableLab = "grading scale granularity (s)"
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] !=
+            as.data.frame(t(baseline[variables != focusVariable]))),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
+fig <- ggpubr::ggarrange(
+  plotParameter(
+    data = rii,
+    dep = "ICC", deplabel = "IRR (ICC)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = focusVariableLab
+  ),
+  plotParameter(
+    data = rii,
+    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    indep = "TCMswapping",
+    indeplabel = "TC-mapping heterogeneity (ρ)",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  ncol = 1, hjust = -1, align = "hv"
+)
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_C7.", exportFormat),
+  width = 1500, height = 1200, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+print(fig)
+dev.off()
+
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Figure_10.", exportFormat),
+  width = 1500, height = 700, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+plotParameter(
+  data = rii,
+  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
+  indep = "TCMswapping",
+  indeplabel = "TC-mapping heterogeneity (ρ)",
+  facetby = focusVariable,
+  facetlabel = focusVariableLab
+)
+dev.off()
+
+
+
+
+
+################################################################################
+################################################################################
+#
+# Other:
+# On TC-mapping heterogeneity __________________________________________________
 
 #a = s$q27$i[[1]]
 #b = s$q27$i[[3]]
