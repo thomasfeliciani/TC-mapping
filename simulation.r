@@ -57,8 +57,6 @@ simulation <- function(
   proposals <- apply(X = proposals, MARGIN = 2, FUN = truncate)
   
   
-  ###################################
-  
   # Initializing the objects to store reviewer evaluations:
   gradesCrit <- matrix(NA, nrow = nReviewers, ncol = nCriteria)
   gradesOverall <- rep(NA, times = nReviewers)
