@@ -76,6 +76,11 @@ For cross-reference, these are the survey items that are used in the script, and
 * _“Figure B1”_ plots the responses to questions Q33-34. These are used to infer peer reviewers´ interpretation of a grading scale and degree of interpersonal variation in this regard.
 * The script “results.r” uses responses to Q27a-l to calculate how, on average, peer reviewers map twelve aspects of a submission onto three evaluation criteria in use at the funding institution they reviewed for. These responses, appropriately aggregated, are then saved to file: “./data/pTCM.RData” - which is then used by the simulation model in various ways (see Sections “simulation.r” and “results.r”).
 
+
+## Acknowledgements
+This material is based upon works supported by the Science Foundation Ireland under Grant No.17/SPR/5319.
+
+
 ## References
 * R Core Team (2021). _R: A language and environment for statistical computing_. R Foundation for Statistical Computing, Vienna, Austria. https://www.R-project.org/.
 * Shankar, Kalpana; Luo, Junwen; Ma, Lai; Lucas, Pablo; Feliciani, Thomas (2021). _SPRING 2020 survey: peer review of grant proposals_. figshare. Dataset. https://doi.org/10.6084/m9.figshare.13651058.v1
