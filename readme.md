@@ -56,7 +56,7 @@ This script defines all points of the parameter space that are to be simulated. 
 Running this script might take several hours, depending on the area of the parameter space explored and on the number of repetitions per configuration.
 
 
-# results.r
+## results.r
 _Requires libraries:_ “ggplot2”_,_ “reshape” _and_ “ggpubr”_._
 
 _Sources_ “util.r”_._
@@ -68,7 +68,7 @@ This script reproduces descriptive statistics and plots to explore the results o
 * The simulation model (from “./output/ri.RData”);
 * A survey of peer reviewers (see next section). Because the survey cannot be shared (it is not included in this repository), descriptive statistics and plots based on the survey cannot be replicated. If sourced, the script will attempt to load the survey data from “./data/unshareable/survey.RData”, fail, and return a warning message.
 
-# Empirical data
+## Empirical data
 Empirical data is derived from a survey of peer reviewers from a national science funding institution. The survey documentation is public and includes its questionnaire (Shankar et al. 2021 - [DOI](https://doi.org/10.6084/m9.figshare.13651058.v1)). The raw data, however, is not shareable as per agreement with the funding institution and is thus not included in this repository.
 
 For cross-reference, these are the survey items that are used in the script, and why:
@@ -76,8 +76,7 @@ For cross-reference, these are the survey items that are used in the script, and
 * _“Figure B1”_ plots the responses to questions Q33-34. These are used to infer peer reviewers´ interpretation of a grading scale and degree of interpersonal variation in this regard.
 * The script “results.r” uses responses to Q27a-l to calculate how, on average, peer reviewers map twelve aspects of a submission onto three evaluation criteria in use at the funding institution they reviewed for. These responses, appropriately aggregated, are then saved to file: “./data/pTCM.RData” - which is then used by the simulation model in various ways (see Sections “simulation.r” and “results.r”).
 
-
-# References
+## References
 * R Core Team (2021). _R: A language and environment for statistical computing_. R Foundation for Statistical Computing, Vienna, Austria. https://www.R-project.org/.
 * Shankar, Kalpana; Luo, Junwen; Ma, Lai; Lucas, Pablo; Feliciani, Thomas (2021). _SPRING 2020 survey: peer review of grant proposals_. figshare. Dataset. https://doi.org/10.6084/m9.figshare.13651058.v1
 
