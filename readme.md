@@ -61,11 +61,11 @@ _Requires libraries:_ “ggplot2”_,_ “reshape” _and_ “ggpubr”_._
 
 _Sources_ “util.r”_._
 
-_Loads datasets:_ “pTCM.RData” _and_ “ri.RData” _from_ “./data/”_._
+_Loads datasets:_ “./data/pTCM.RData” _and_ “./output/ri.RData”_._
 
 
 This script reproduces descriptive statistics and plots to explore the results of:
-* The simulation model (from “./output/ri.RData”);
+* The simulation model (from “ri.RData”);
 * A survey of peer reviewers (see next section). Because the survey cannot be shared (it is not included in this repository), descriptive statistics and plots based on the survey cannot be replicated. If sourced, the script will attempt to load the survey data from “./data/unshareable/survey.RData”, fail, and return a warning message.
 
 ## Empirical data
