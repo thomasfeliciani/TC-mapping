@@ -1,5 +1,5 @@
 # Topics-criteria mapping and inter-rater reliability
-These scripts run a simulation model of inter-rater reliability (IRR) and analyze the results thereof. Each run simulates an expert panel (such as a peer review panel) whose members are tasked with the evaluation of a set of submissions. Each panel member evaluates the submissions by assigning them a grade in a specified grading scale.  Various factors affect the IRR among the panel members, generally relating to the features of the panel, its members and the rules of the evaluation process. This simulation model considers some of these factors:
+These scripts run a simulation model of inter-rater reliability (IRR) and analyze the results. Each run simulates an expert panel (such as a peer review panel) whose members are tasked with the evaluation of a set of submissions (such as grant proposals). Each panel member evaluates the submissions by assigning them a grade in a specified grading scale. Various factors affect the IRR among the panel members, generally relating to the features of the panel, its members and the rules of the evaluation process. This simulation model considers some of these factors:
 * Noise in the evaluation by the panel members;
 * Interpersonal differences in biases influencing the evaluation;
 * Interpersonal differences in the interpretation of the grading scale;
@@ -41,7 +41,7 @@ The simulation ends with the calculation of the outcome variables. IRR is operat
 ### Other information
 The script includes an example call to the function that runs the simulation (see the very end of the script).
 
-The file “pTCM.RData” contains a 12-by-3 matrix that contains the probability weights for the creation of the template mapping of (twelve) submission aspects onto (three) evaluation criteria. See Section “Empirical data” for more details.
+The file “pTCM.RData” contains a 12-by-3 matrix with the probability weights for the creation of the template mapping of (twelve) submission aspects onto (three) evaluation criteria. See Section “Empirical data” for more details.
 
 
 ## battery.r
@@ -70,9 +70,9 @@ This script reproduces descriptive statistics and plots to explore the results o
 * A survey of peer reviewers (see next section). Because the survey cannot be shared (it is not included in this repository), descriptive statistics and plots based on the survey cannot be replicated. If sourced, the script will attempt to load the survey data from “./data/unshareable/survey.RData”, fail, and return a warning message.
 
 ## Empirical data
-Empirical data is derived from a survey of peer reviewers from a national science funding institution. The survey documentation is public and includes its questionnaire (Shankar et al. 2021 - [DOI](https://doi.org/10.6084/m9.figshare.13651058.v1)). The raw data, however, is not shareable as per agreement with the funding institution and is thus not included in this repository.
+Empirical data is derived from a survey of peer reviewers from a national science funding institution. The survey documentation is public and includes its questionnaire (Shankar et al. 2021 - [DOI](https://doi.org/10.6084/m9.figshare.13651058.v1)). The microdata, however, are not shareable as per agreement with the funding institution and is thus not included in this repository.
 
-For cross-reference, these are the survey items that are used in the script, and why:
+For cross-reference, these are the survey items that are used in the script, and what for:
 * _“Figure A1”_ plots the demographics of survey respondents, comparing it to the demographics of the population of reviewers from the funding institution. This is based on the survey questions Q1 (gender), Q2 (academic background), Q3 (contry of respondent´s institution), Q8 and Q16 (funding program for which the respondent has reviewed).
 * _“Figure B1”_ plots the responses to questions Q33-34. These are used to infer peer reviewers´ interpretation of a grading scale and degree of interpersonal variation in this regard.
 * The script “results.r” uses responses to Q27a-l to calculate how, on average, peer reviewers map twelve aspects of a submission onto three evaluation criteria in use at the funding institution they reviewed for. These responses, appropriately aggregated, are then saved to file: “./data/pTCM.RData” - which is then used by the simulation model in various ways (see Sections “simulation.r” and “results.r”).
