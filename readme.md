@@ -28,7 +28,8 @@ This script is the core of the simulation model, as it defines the function that
 Each simulation starts with the creation of:
 * A set of submissions and their related attributes;
 * A grading scale (i.e. a set of intervals mapped onto an underlying continuous quality scale);
-* A template mapping of aspects of the submissions onto the evaluation criteria against which the submissions are to be evaluated against;
+* A template mapping of aspects of the submissions onto the evaluation criteria against which the submissions are to be evaluated against.
+
 Then, the simulation assigns the following to each panel member:
 * Some degree of competence (which affects noise in their evaluation);
 * Some degree of bias: this implements how lenient or strict each panel member is;
