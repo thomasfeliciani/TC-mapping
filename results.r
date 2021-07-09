@@ -822,13 +822,13 @@ df <- rbind(
   data.frame(
     x = s$i$q34,
     th = rep(
-      "1st threshold: between\n'very low quality' and 'average'",
+      "1st threshold: between\n'very low quality' and 'low quality'",
       times = length(s$i$q34)
   )),
   data.frame(
   x = s$i$q33,
   th = rep(
-    "4th threshold: between\n'very good' and 'outstanding'",
+    "4th threshold: between\n'high quality' and 'outstanding'",
     times = length(s$i$q33)
   ))
 )

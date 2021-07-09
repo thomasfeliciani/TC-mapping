@@ -3,7 +3,7 @@ These scripts run a simulation model of inter-rater reliability (IRR) and analyz
 * Noise in the evaluation by the panel members;
 * Interpersonal differences in biases influencing the evaluation;
 * Interpersonal differences in the interpretation of the grading scale;
-* Interpersonal differences in the choice of aspects of a proposal on which to base one’s judgment;
+* Interpersonal differences in the choice of aspects of a submission on which to base one’s judgment;
 * Granularity of the grading scale.
 We use this simulation model to study whether, how and under what conditions (a combination of) these factors affect IRR in an expert panel.
 
@@ -28,19 +28,19 @@ This script is the core of the simulation model, as it defines the function that
 Each simulation starts with the creation of:
 * A set of submissions and their related attributes;
 * A grading scale (i.e. a set of intervals mapped onto an underlying continuous quality scale);
-* A template mapping of proposals aspects onto the evaluation criteria against which the submissions are to be evaluated against;
+* A template mapping of aspects of the submissions onto the evaluation criteria against which the submissions are to be evaluated against;
 Then, the simulation assigns the following to each panel member:
 * Some degree of competence (which affects noise in their evaluation);
 * Some degree of bias: this implements how lenient or strict each panel member is;
 * An interpretation of the grading scale: this is implemented as interpersonal variation in mapping the grading scale onto the underlying continuous quality scale;
-* A unique choice of topics to consider when evaluating the various evaluation criteria. Interpersonal variation here is achieved by rewiring the template mapping of proposal aspects onto the evaluation criteria.
+* A unique choice of topics to consider when evaluating the various evaluation criteria. Interpersonal variation here is achieved by rewiring the template mapping of aspects of the submissions onto the evaluation criteria.
 Based on these reviewers attributes, the simulation model calculates for each panel member their opinion of each of the submissions. The opinion is then converted into a grade in the prescribed grading scale.
 The simulation ends with the calculation of the outcome variables. IRR is operationalized in different ways, including an intra-class correlation coefficient and Spearman’s rank correlation coefficient.
 
 ### Other information
 The script includes an example call to the function that runs the simulation (see the very end of the script).
 
-The file “pTCM.RData” contains a 12-by-3 matrix that contains the probability weights for the creation of the template mapping of (twelve) proposal aspects onto (three) evaluation criteria. See Section “Empirical data” for more details.
+The file “pTCM.RData” contains a 12-by-3 matrix that contains the probability weights for the creation of the template mapping of (twelve) submission aspects onto (three) evaluation criteria. See Section “Empirical data” for more details.
 
 
 ## battery.r
