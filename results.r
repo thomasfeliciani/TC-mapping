@@ -81,7 +81,7 @@ figure2 <- ggarrange(
 #plot(figure2)
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_1.", exportFormat),
+  filename = paste0("./outputGraphics/Fig1.", exportFormat),
   width = 2000,
   height = 700,
   units = "px",
@@ -146,7 +146,7 @@ criteriaLabels <- data.frame(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_2.", exportFormat),
+  filename = paste0("./outputGraphics/Fig2.", exportFormat),
   width = 2000,
   height = 1050,
   units = "px",
@@ -216,7 +216,7 @@ df <- reshape::melt(df, id.vars = "topic")
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_3.", exportFormat),
+  filename = paste0("./outputGraphics/Fig3.", exportFormat),
   width = 1400,
   height = 1100,
   res = 300, units = "px"
@@ -303,7 +303,7 @@ nodeLabels <- data.frame(
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_4.", exportFormat),
+  filename = paste0("./outputGraphics/Fig4.", exportFormat),
   width = 2300,
   height = 1200,
   units = "px",
@@ -375,7 +375,7 @@ gradePos = sapply(1:5, function(x){th = c(0, th, 1); return(mean(th[x:(x+1)]))})
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_5.", exportFormat),
+  filename = paste0("./outputGraphics/Fig5.", exportFormat),
   width = 1200,
   height = 350,
   units = "px",
@@ -553,7 +553,7 @@ figure6 <- ggarrange(
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_6.", exportFormat),
+  filename = paste0("./outputGraphics/Fig6.", exportFormat),
   width = 1000,
   height = 1000,
   units = "px",
@@ -627,7 +627,7 @@ rii <- ri[closeToBaseline,]
 # baseline: TCMswapping and IRR
 #
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_7.", exportFormat),
+  filename = paste0("./outputGraphics/Fig7.", exportFormat),
   width = 1400,
   height = 1000,
   res = 300, units = "px"
@@ -673,7 +673,7 @@ dev.off()
 # baseline: TCMswapping and IRR
 #
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_8.", exportFormat),
+  filename = paste0("./outputGraphics/Fig8.", exportFormat),
   width = 1000,
   height = 1000,
   res = 300, units = "px"
@@ -765,7 +765,7 @@ demo$value <- demo$value * 100
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_A1.", exportFormat),
+  filename = paste0("./outputGraphics/Fig11.", exportFormat),
   width = 1600,
   height = 800,
   units = "px",
@@ -835,7 +835,7 @@ df <- rbind(
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_B1.", exportFormat),
+  filename = paste0("./outputGraphics/Fig12.", exportFormat),
   width = 1250,
   height = 700,
   units = "px",
@@ -922,7 +922,7 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_C1.", exportFormat),
+  filename = paste0("./outputGraphics/Fig13.", exportFormat),
   width = 1500, height = 1200, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -976,7 +976,7 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_C2.", exportFormat),
+  filename = paste0("./outputGraphics/Fig14.", exportFormat),
   width = 1500, height = 1200, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -1029,7 +1029,7 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_C3.", exportFormat),
+  filename = paste0("./outputGraphics/Fig15.", exportFormat),
   width = 1500, height = 1200, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -1082,7 +1082,7 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_C4.", exportFormat),
+  filename = paste0("./outputGraphics/Fig16.", exportFormat),
   width = 1500, height = 1200, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -1135,7 +1135,7 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_C5.", exportFormat),
+  filename = paste0("./outputGraphics/Fig17.", exportFormat),
   width = 1500, height = 1200, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -1189,7 +1189,7 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_C6.", exportFormat),
+  filename = paste0("./outputGraphics/Fig18.", exportFormat),
   width = 1100, height = 1200, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -1199,7 +1199,7 @@ dev.off()
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_9.", exportFormat),
+  filename = paste0("./outputGraphics/Fig9.", exportFormat),
   width = 1100, height = 700, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -1259,7 +1259,7 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_C7.", exportFormat),
+  filename = paste0("./outputGraphics/Fig19.", exportFormat),
   width = 1500, height = 1200, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -1269,7 +1269,7 @@ dev.off()
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Figure_10.", exportFormat),
+  filename = paste0("./outputGraphics/Fig10.", exportFormat),
   width = 1500, height = 700, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {

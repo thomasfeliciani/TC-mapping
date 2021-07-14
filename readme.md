@@ -70,7 +70,7 @@ This script reproduces descriptive statistics and plots to explore the results o
 * A survey of peer reviewers (see next section). Because the survey cannot be shared (it is not included in this repository), descriptive statistics and plots based on the survey cannot be replicated. If sourced, the script will attempt to load the survey data from “./data/unshareable/survey.RData”, fail, and return a warning message.
 
 ## Empirical data
-Empirical data is derived from a survey of peer reviewers from a national science funding institution. The survey documentation is public and includes its questionnaire (Shankar et al. 2021 - [DOI](https://doi.org/10.6084/m9.figshare.13651058.v1)). The microdata, however, are not shareable as per agreement with the funding institution and is thus not included in this repository.
+Empirical data is derived from a survey of peer reviewers from a national science funding institution. The survey documentation is public and includes its questionnaire (Shankar et al. 2021 - [DOI](https://doi.org/10.6084/m9.figshare.13651058.v1)). The microdata, however, are not shareable as per agreement with the funding institution and are thus not included in this repository.
 
 For cross-reference, these are the survey items that are used in the script, and what for:
 * _“Figure A1”_ plots the demographics of survey respondents, comparing it to the demographics of the population of reviewers from the funding institution. This is based on the survey questions Q1 (gender), Q2 (academic background), Q3 (contry of respondent´s institution), Q8 and Q16 (funding program for which the respondent has reviewed).
