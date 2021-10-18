@@ -20,7 +20,7 @@ load("./data/pTCM.RData") # This contains the weights for a TC-mapping template.
 nRepetitions <- 500 # repetitions per execution
 
 battery <- expand.grid(
-  nReviewers = 5,
+  nReviewers = c(3, 5, 10),
   nProposals = 10,
   attributeMean = 0.75,
   attributeSD = 0.2,

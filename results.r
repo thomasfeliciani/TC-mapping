@@ -1286,6 +1286,73 @@ dev.off()
 
 
 
+# ______________________________________________________________________________
+# Number of reviewers (R)
+#
+focusVariable = "nReviewers"
+focusVariableLab = "number of reviewers per proposal (R)"
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] !=
+            as.data.frame(t(baseline[variables != focusVariable]))),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
+fig <- ggpubr::ggarrange(
+  plotParameter(
+    data = rii,
+    dep = "ICC", deplabel = "IRR (ICC)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = focusVariableLab
+  ),
+  plotParameter(
+    data = rii,
+    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    indep = "TCMswapping",
+    indeplabel = "TC-mapping heterogeneity (ρ)",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  ncol = 1, hjust = -1, align = "hv"
+)
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/FigX.", exportFormat),
+  width = 1500, height = 1200, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+print(fig)
+dev.off()
+
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Fig10.", exportFormat),
+  width = 1500, height = 700, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+plotParameter(
+  data = rii,
+  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
+  indep = "TCMswapping",
+  indeplabel = "TC-mapping heterogeneity (ρ)",
+  facetby = focusVariable,
+  facetlabel = focusVariableLab
+)
+dev.off()
+
+
 
 
 ################################################################################
@@ -1318,6 +1385,19 @@ for (i in 1:length(s$q27$i)){
 }
 TCM <- s$q27$i[-emptyTCM]
 
+# Now the mappings of those who reviewed exclusively for IvP
+TCM_IF <- rep(FALSE, times = length(s$i$q8))
+TCM_IvP <- rep(FALSE, times = length(s$i$q16))
+for(i in 1:length(s$i$q8)) {
+  if (!(i %in% emptyTCM)) {
+    TCM_IF[i] <- s$i$q8[i] != "None"
+    TCM_IvP[i] <- s$i$q16[i] != "None"
+  }
+}
+TCM_IF <- s$q27$i[TCM_IF]
+TCM_IvP <- s$q27$i[TCM_IvP]
+
+
 # We also calculate the relative frequency of each edge in the network (i.e.
 # each matching of topics-criteria) and we save it to file. These are used by
 # the simulation script as calibration data to generate realistic TC-mappings.
@@ -1333,7 +1413,9 @@ save(pTCM, file = "./data/pTCM.RData")
 # So, we create a dataframe "diff" where each rows represent a unique pair of
 # TC-mappings.
 diff <- as.data.frame(t(combn(1:length(TCM), m = 2)))
-diff$d <- NA
+diff_IF <- as.data.frame(t(combn(1:length(TCM_IF), m = 2)))
+diff_IvP <- as.data.frame(t(combn(1:length(TCM_IvP), m = 2)))
+diff$d <- diff_IF$d <- diff_IvP$d <- NA
 
 
 # For each of these pairs, we calculate and store the Hamming distance:
@@ -1360,7 +1442,25 @@ for (c in 1:3) {
   ))
 }
 
-
+# ... and for the two funding programs separately:
+print(paste0(
+  "SFI program: IF. Average norm. Hamming dist.: ",
+  round(mean(apply(
+    X = diff_IF,
+    MARGIN = 1,
+    FUN = function(x) twdis(
+      a = TCM_IF[[x[1]]][,c], b = TCM_IF[[x[2]]][,c], normalized = TRUE)
+  )), digits = 3)
+))
+print(paste0(
+  "SFI program: IvP. Average norm. Hamming dist.: ",
+  round(mean(apply(
+    X = diff_IvP,
+    MARGIN = 1,
+    FUN = function(x) twdis(
+      a = TCM_IvP[[x[1]]][,c], b = TCM_IvP[[x[2]]][,c], normalized = TRUE)
+  )), digits = 3)
+))
 
 
 

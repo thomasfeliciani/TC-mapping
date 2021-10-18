@@ -269,7 +269,6 @@ simulation <- function(
   #psych::ICC(x = overallGrades)
   if (is.nan(ICC)) ICC <- NA
   
-  
   # We also calculate reviewer agreement by averaging the average pairwise
   # correlation among reviewers. Since reviewer grades are on an ordinal scale,
   # We use Spearman's Rho ranking correlation coefficient.
@@ -288,9 +287,12 @@ simulation <- function(
   spearmanRho <- mean(reviewerPairs$spearmanRho, na.rm = TRUE)
   if(is.nan(spearmanRho)) spearmanRho <- NA
   
+  # We also measure reviewer disagreement as the SD of grades got by a proposal,
+  # averaged across all simulated proposals.
+  SDs <- apply(X = overallGrades, MARGIN = 1, FUN = sd, na.rm = TRUE)
+  meanSD <- mean(SDs)
   
-  
-  # Last, we also check to what degree the review panel *as a whole* was able
+  # Last, we check to what degree the review panel *as a whole* was able
   # to estimate the ranking of proposals. Proposal ranking is inferred from
   # the average of their attribute values.
   meanGrades <- apply(X = overallGrades, MARGIN = 1, FUN = mean, na.rm = TRUE)
@@ -313,6 +315,7 @@ simulation <- function(
       TCMdiversity = TCMdiversity,
       ICC = ICC,
       spearmanRho = spearmanRho,
+      meanSD = meanSD,
       rankingPerf = rankingPerf
     ),
     proposals = proposals,
