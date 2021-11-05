@@ -3,6 +3,7 @@
 rm(list = ls())
 library("ggplot2")
 library("reshape", include.only = "melt")
+library("readxl", include.only = "read_excel")
 library("ggpubr")
 source("util.r")
 load("./data/unshareable/survey.RData") # Loading survey 
@@ -29,7 +30,7 @@ edges <- data.frame(
 )
 edges <- edges[18:1,]; row.names(edges) <- 1:18 # makes it easier to read
 edges1 <- edges[c(1, 4, 5, 7, 8, 15),]
-edges2 <- edges[c(1, 4, 5, 7, 14, 15, 18),]
+edges2 <- edges[c(4, 5, 7, 14, 15, 18),]
 #nodeLabels <- data.frame(
 #  x = c(0, 1), y = c(7, 6), lab = c("review topics", "evaluation criteria")
 #)
@@ -73,7 +74,7 @@ plotTCM <- function(edges) {ggplot() +
   )
 }
 
-figure2 <- ggarrange(
+figure1 <- ggarrange(
   plotTCM(edges1), plotTCM(edges2),
   labels = c("reviewer #1", "reviewer #2"),
   ncol = 2, hjust = -1
@@ -90,7 +91,7 @@ figureParameters <- list(
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
 
-plot(figure2)
+plot(figure1)
 
 dev.off()
 
@@ -429,10 +430,389 @@ dev.off()
 
 
 
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+################################################################################
+# Simulation results
+
+load("./output/ri.RData")
+
+baseline = c(
+  nReviewers = 3,
+  nProposals = 10,
+  attributeMean = 0.75,
+  attributeSD = 0.2,
+  attributeCorr = 0.5,
+  nTopics = 12,
+  nCriteria = 3,
+  reviewerError = 0.1,
+  reviewerBiasDiversity = 0.1,
+  GLdiversity = 0.1,
+  gradingScale = 5
+)
+variables <- c(
+  "nReviewers", "nProposals", "attributeMean", "attributeSD", "attributeCorr",
+  "nTopics", "nCriteria", "reviewerError", "reviewerBiasDiversity",
+  "GLdiversity", "gradingScale")
+
+#focusVariable = "gradingScale"
+focusVariable = ""
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] != baseline),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
 
 
 
 # Figure 6 _____________________________________________________________________
+# baseline: TCMswapping and IRR
+#
+figure6a <- ggplot(
+  data = rii, aes(x = TCMdiversity, y = ICC, color = as.factor(TCMswapping))
+) +
+  geom_vline( # reference line (TCMdiversity at SFI)
+    xintercept = 0.3696205, linetype = 2, color = "black"
+  ) +
+  geom_point(
+    size = 0.8, position = position_jitter(width = 0.01, height = 0.01)) +
+  geom_text(
+    aes(x = 0.35, y = 0.9, angle = 90), color = "black", size = 3,
+    label = "SFI reviewers"
+  ) +
+  scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
+  scale_x_continuous(limits = c(-0.02, max(rii$TCMdiversity)), expand=c(0,0)) +
+  labs(
+    x = "TC-mapping heterogeneity\n(average normalized Hamming distance)",
+    y = "inter-rater reliability (ICC)",
+    color = "ρ"
+  ) +
+  scale_y_continuous(limits = c(0,1)) +
+  theme(
+    panel.background = element_blank(),
+    plot.background = element_rect(fill="transparent", color=NA),
+    panel.border = element_blank(),#rect(fill="transparent", color="gray50"),
+    panel.grid.major.x = element_line(color = "gray95"),
+    panel.grid.major.y = element_line(color = "gray95"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(size = 1)#,
+    #legend.position = "NA"
+  )
+
+
+figure6b <- ggplot(
+  data = rii, aes(x = TCMdiversity, y = meanSD)
+) +
+  #geom_vline( # reference line (TCMdiversity at SFI)
+  #  xintercept = 0.3696205, linetype = 2, color = "black"
+  #) +
+  #geom_hline( # reference line (SD at SFI)
+  #  yintercept = 0.4564911, linetype = 2, color = "black"
+  #) +
+  geom_point(
+    aes(color = as.factor(TCMswapping)),
+    size = 0.8, position = position_jitter(width = 0.01, height = 0.01)
+  ) +
+  geom_segment(
+    data = data.frame(
+      x = c(-0.02, 0.3696205), y = c(0.4681695, 0),
+      xend = c(0.3696205, 0.3696205), yend = c(0.4681695, 0.4681695)
+    ),
+    aes(x = x, y = y, xend = xend, yend = yend), linetype = 2
+  ) +
+  geom_point(aes(x = 0.3696205, y = 0.4681695), color = "black", size = 2) +
+  geom_text(
+    aes(x = 0.367, y = 0.59, angle = 0), color = "black", size = 3,
+    label = "SFI reviewers"
+  ) +
+
+  scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
+  labs(
+    x = "TC-mapping heterogeneity\n(average normalized Hamming distance)",
+    y = "reviewer disagreement (average SD)",
+    color = "ρ"
+  ) +
+  scale_x_continuous(limits = c(-0.02, max(rii$TCMdiversity)), expand=c(0,0)) +
+  scale_y_continuous(limits = c(0, max(rii$meanSD)), expand = c(0,0)) +
+  theme(
+    panel.background = element_blank(),
+    plot.background = element_rect(fill="transparent", color=NA),
+    panel.border = element_blank(),#rect(fill="transparent", color="gray50"),
+    panel.grid.major.x = element_line(color = "gray95"),
+    panel.grid.major.y = element_line(color = "gray95"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(size = 1)#,
+    #legend.position = "NA"
+  )
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Fig6.", exportFormat),
+  width = 2200,
+  height = 1000,
+  res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+ggpubr::ggarrange(
+  figure6a, figure6b,
+  #labels = c("reviewer #1", "reviewer #2"),
+  ncol = 2, hjust = -1, common.legend = TRUE, legend = "right"
+)
+dev.off()
+
+
+
+
+
+
+
+# Figure 7 _____________________________________________________________________
+# baseline: TCMswapping and IRR
+#
+figure7a <- ggplot(
+  data = rii,
+  aes(
+    x = as.factor(TCMswapping),
+    y = ICC,
+    fill = as.factor(TCMswapping)
+  )
+) +
+  geom_violin(color = "gray80", fill = "gray80", width = 0.8) +
+  geom_boxplot(width = 0.3) +
+  scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
+  scale_fill_viridis_d(begin = 0.5, end = 0.92, option = "A") +
+  labs(
+    x = "TC-mapping heterogeneity (ρ)",
+    y = "inter-rater reliability (ICC)"
+  ) +
+  theme(
+    panel.background = element_blank(),
+    plot.background = element_rect(fill="transparent", color=NA),
+    panel.border = element_blank(),#rect(fill="transparent", color="gray50"),
+    panel.grid.major.x = element_line(color = "gray95"),
+    panel.grid.major.y = element_line(color = "gray95"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(size = 1),
+    legend.position = "NA"
+  )
+
+figure7b <- ggplot(
+  data = rii,
+  aes(
+    x = as.factor(TCMswapping),
+    y = meanSD,
+    fill = as.factor(TCMswapping)
+  )
+) +
+  geom_violin(color = "gray80", fill = "gray80", width = 0.8) +
+  geom_boxplot(width = 0.3) +
+  geom_hline(yintercept = 0.4681695, linetype = 2) + # reference line
+  scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
+  scale_fill_viridis_d(begin = 0.5, end = 0.92, option = "A") +
+  labs(
+    x = "TC-mapping heterogeneity (ρ)",
+    y = "reviewer disagreement (average SD)"
+  ) +
+  theme(
+    panel.background = element_blank(),
+    plot.background = element_rect(fill="transparent", color=NA),
+    panel.border = element_blank(),#rect(fill="transparent", color="gray50"),
+    panel.grid.major.x = element_line(color = "gray95"),
+    panel.grid.major.y = element_line(color = "gray95"),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(size = 1),
+    legend.position = "NA"
+  )
+
+
+
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Fig7.", exportFormat),
+  width = 1900,
+  height = 1000,
+  res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+ggpubr::ggarrange(
+  figure7a, figure7b,
+  ncol = 2, hjust = -1
+)
+dev.off()
+
+
+
+
+
+
+
+
+################################################################################
+################################################################################
+#
+# Appendix A ___________________________________________________________________
+# Survey data: TC-mapping heterogeneity among SFI reviewers
+#
+#
+#
+#
+# First we look into the survey demographics, comparing them withe the
+# composition of the population of SFI reviewers.
+#
+# Formatting data so it can be easily plotted:
+a <- melt(s$populationDemographics$gender, id.vars = "class")
+a$facet <- "gender"
+a$class[a$class == "prefer not to say / non-response"] <-
+  "prefer not to say"
+
+b <- melt(s$populationDemographics$country, id.vars = "class")
+b$facet <- "institution country"
+b$class[b$class == "other EU country"] <- "European Union"
+b <- b[b$class != "non-response",]
+
+c <- melt(s$populationDemographics$institution, id.vars = "class")
+c$facet <- "background"
+c$class[c$class == "other/non-response"] <-
+  "other / prefer not to say"
+
+d <- melt(s$populationDemographics$program, id.vars = "class")
+d$facet <- "reviewed for"
+d$class[d$class == "only Industry Fellowship"] <-
+  "Industry Fellowship"
+d$class[d$class == "only Investigators Programme"] <-
+  "Investigators Programme"
+d$class[d$class == "both"] <- "both"
+d$class[d$class == "neither/non-response"] <-
+  "neither"
+
+demo <- rbind(a, b, c, d)
+rm(a, b, c, d)
+
+demo$class <- factor(x = demo$class, levels = unique(demo$class))
+demo$facet <- factor(x = demo$facet, levels = unique(demo$facet))
+demo$value <- demo$value * 100
+#demo$variable <- factor(x = demo$class, levels = unique(demo$class))
+
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Fig10.", exportFormat),
+  width = 1600,
+  height = 800,
+  units = "px",
+  res = 300
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+
+ggplot(demo, aes(x = class, y = value, fill = variable)) + 
+  geom_col(
+    position = position_dodge2(reverse = FALSE, width = NULL, padding = 0),
+    width = 0.5, color = "black", size = 0.5
+  ) +
+  #scale_x_discrete(limits = rev) +
+  #facet_wrap(facets = demo$facet, nrow = 1, scales = "free_x") +
+  facet_grid(cols = vars(demo$facet), scales = "free_x", space = "free") +
+  ylab("relative frequency") +
+  #scale_fill_discrete(
+  scale_fill_viridis_d(
+    name = "", begin = 0.85, end = 0.4, option = "A",# begin = 0.85, end = 0.1,
+    labels = c(
+      "SFI reviewers\nN = 1591 (population)",
+      "survey respondents\nN = 310 (sample)"
+    )
+  ) +
+  scale_y_continuous(
+    limits = c(0,100), expand = c(0,0), breaks = c(0, 25, 50, 75, 100),
+    labels = c("0%", "25%", "50%", "75%", "100%")
+  ) +
+  theme(
+    plot.margin = margin(0, 0, 0, 0, "pt"),
+    panel.border = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(color = "gray85", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "gray95"),#element_blank(),
+    legend.position = "top",
+    legend.background = element_rect(fill = "gray95"),
+    strip.background = element_blank(),#element_rect(fill = "gray95"),
+    axis.title = element_blank(),
+    axis.line.y = element_line(colour = "black"),
+    axis.line.x = element_blank(),
+    axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
+
+dev.off()
+
+
+################################################################################
+################################################################################
+#
+# Appendix B ___________________________________________________________________
+th <- qbeta(1:4 / 5, shape1 = 2, shape2 = 1) * 100
+df <- rbind(
+  data.frame(
+    x = s$i$q34,
+    th = rep(
+      "1st threshold: between\n'very low quality' and 'low quality'",
+      times = length(s$i$q34)
+  )),
+  data.frame(
+  x = s$i$q33,
+  th = rep(
+    "4th threshold: between\n'high quality' and 'outstanding'",
+    times = length(s$i$q33)
+  ))
+)
+
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Fig11.", exportFormat),
+  width = 1250,
+  height = 700,
+  units = "px",
+  res = 300
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+
+ggplot(df, aes(x = x, fill = th)) +
+  geom_histogram(breaks = 0:10 * 10, color = "black", position = "dodge") +
+  #geom_vline(xintercept = th, linetype = 2, color = "black") +
+  facet_grid(cols = vars(th)) +
+  scale_fill_viridis_d(name = "", begin = 0.85, end = 0.4, option = "A") +
+  scale_x_continuous(breaks = 0:10 * 10, labels = function(x){paste0(x, "%")}) +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(x = "quality percentage", y = "frequency") +
+  theme(
+    plot.margin = margin(0, 0, 0, 0, "pt"),
+    panel.border = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "gray95"),
+    legend.position = "NA",
+    legend.background = element_rect(fill = "gray95"),
+    strip.background = element_blank(),#element_rect(fill = "gray95"),
+    #axis.title = element_blank(),
+    axis.line.y = element_line(colour = "black"),
+    axis.line.x = element_blank(),
+    axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 7))
+
+dev.off()
+
+
+# Figure 12 ____________________________________________________________________
 
 granul <- c(2, 5, 10)#c(2,5,10,20)
 for (gr in 1:length(granul)) {
@@ -542,7 +922,7 @@ pdf <- ggplot() + # probability density function
     axis.ticks.x = element_blank() 
   )
 
-figure6 <- ggarrange(
+figure12 <- ggarrange(
   pdf, th,
   labels = c("A", "B"),
   ncol = 1,
@@ -553,321 +933,20 @@ figure6 <- ggarrange(
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig6.", exportFormat),
-  width = 1000,
-  height = 1000,
-  units = "px",
-  res = 300
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-
-plot(figure6)
-
-dev.off()
-
-
-
-
-
-
-
-
-
-
-
-
-################################################################################
-################################################################################
-################################################################################
-################################################################################
-################################################################################
-# Simulation results
-
-load("./output/ri.RData")
-
-baseline = c(
-  nReviewers = 5,
-  nProposals = 10,
-  attributeMean = 0.75,
-  attributeSD = 0.2,
-  attributeCorr = 0.5,
-  nTopics = 12,
-  nCriteria = 3,
-  reviewerError = 0.1,
-  reviewerBiasDiversity = 0.1,
-  GLdiversity = 0.1,
-  gradingScale = 5
-)
-variables <- c(
-  "nReviewers", "nProposals", "attributeMean", "attributeSD", "attributeCorr",
-  "nTopics", "nCriteria", "reviewerError", "reviewerBiasDiversity",
-  "GLdiversity", "gradingScale")
-
-#focusVariable = "gradingScale"
-focusVariable = ""
-
-closeToBaseline <- apply(
-  X = ri,
-  MARGIN = 1,
-  FUN = function(x) {
-    ifelse(
-      any(x[variables[variables != focusVariable]] != baseline),
-      return(FALSE),
-      return(TRUE)
-    )
-  }
-)
-rii <- ri[closeToBaseline,]
-
-
-
-
-# Figure 7 _____________________________________________________________________
-# baseline: TCMswapping and IRR
-#
-figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig7.", exportFormat),
-  width = 1400,
-  height = 1000,
-  res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-
-ggplot(
-  data = rii, aes(x = TCMdiversity, y = ICC, color = as.factor(TCMswapping))
-) +
-  geom_vline( # reference line (TCMdiversity at SFI)
-    xintercept = 0.3696205, linetype = 2, color = "black"
-  ) +
-  geom_point(size = 0.8) +
-  geom_text(
-    aes(x = 0.35, y = 0.9, angle = 90), color = "black", size = 3,
-    label = "SFI reviewers"
-  ) +
-  scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
-  labs(
-    x = "TC-mapping heterogeneity\n(average normalized Hamming distance)",
-    y = "inter-rater reliability (ICC)",
-    color = "ρ"
-  ) +
-  scale_y_continuous(limits = c(0,1)) +
-  theme(
-    panel.background = element_blank(),
-    plot.background = element_rect(fill="transparent", color=NA),
-    panel.border = element_blank(),#rect(fill="transparent", color="gray50"),
-    panel.grid.major.x = element_line(color = "gray95"),
-    panel.grid.major.y = element_line(color = "gray95"),
-    panel.grid.minor = element_blank(),
-    axis.line = element_line(size = 1)#,
-    #legend.position = "NA"
-  )
-
-dev.off()
-
-
-
-
-# Figure 8 _____________________________________________________________________
-# baseline: TCMswapping and IRR
-#
-figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig8.", exportFormat),
-  width = 1000,
-  height = 1000,
-  res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-
-ggplot(
-  data = rii,
-  aes(
-    x = as.factor(TCMswapping),
-    y = ICC,
-    fill = as.factor(TCMswapping)
-  )
-) +
-  geom_violin(color = "gray80", fill = "gray80", width = 0.8) +
-  geom_boxplot(width = 0.3) +
-  scale_color_viridis_d(begin = 0.5, end = 0.92, option = "A") +
-  scale_fill_viridis_d(begin = 0.5, end = 0.92, option = "A") +
-  labs(
-    x = "TC-mapping heterogeneity (ρ)",
-    y = "inter-rater reliability (ICC)"
-  ) +
-  theme(
-    panel.background = element_blank(),
-    plot.background = element_rect(fill="transparent", color=NA),
-    panel.border = element_blank(),#rect(fill="transparent", color="gray50"),
-    panel.grid.major.x = element_line(color = "gray95"),
-    panel.grid.major.y = element_line(color = "gray95"),
-    panel.grid.minor = element_blank(),
-    axis.line = element_line(size = 1),
-    legend.position = "NA"
-  )
-
-dev.off()
-
-
-# Note: for Figures 9 and 10 scroll down to Appendix C.
-
-
-
-
-
-################################################################################
-################################################################################
-#
-# Appendix A ___________________________________________________________________
-# Survey data: TC-mapping heterogeneity among SFI reviewers
-#
-#
-#
-#
-# First we look into the survey demographics, comparing them withe the
-# composition of the population of SFI reviewers.
-#
-# Formatting data so it can be easily plotted:
-a <- melt(s$populationDemographics$gender, id.vars = "class")
-a$facet <- "gender"
-a$class[a$class == "prefer not to say / non-response"] <-
-  "prefer not to say"
-
-b <- melt(s$populationDemographics$country, id.vars = "class")
-b$facet <- "institution country"
-b$class[b$class == "other EU country"] <- "European Union"
-b <- b[b$class != "non-response",]
-
-c <- melt(s$populationDemographics$institution, id.vars = "class")
-c$facet <- "background"
-c$class[c$class == "other/non-response"] <-
-  "other / prefer not to say"
-
-d <- melt(s$populationDemographics$program, id.vars = "class")
-d$facet <- "reviewed for"
-d$class[d$class == "only Industry Fellowship"] <-
-  "Industry Fellowship"
-d$class[d$class == "only Investigators Programme"] <-
-  "Investigators Programme"
-d$class[d$class == "both"] <- "both"
-d$class[d$class == "neither/non-response"] <-
-  "neither"
-
-demo <- rbind(a, b, c, d)
-rm(a, b, c, d)
-
-demo$class <- factor(x = demo$class, levels = unique(demo$class))
-demo$facet <- factor(x = demo$facet, levels = unique(demo$facet))
-demo$value <- demo$value * 100
-#demo$variable <- factor(x = demo$class, levels = unique(demo$class))
-
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig11.", exportFormat),
-  width = 1600,
-  height = 800,
-  units = "px",
-  res = 300
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-
-ggplot(demo, aes(x = class, y = value, fill = variable)) + 
-  geom_col(
-    position = position_dodge2(reverse = FALSE, width = NULL, padding = 0),
-    width = 0.5, color = "black", size = 0.5
-  ) +
-  #scale_x_discrete(limits = rev) +
-  #facet_wrap(facets = demo$facet, nrow = 1, scales = "free_x") +
-  facet_grid(cols = vars(demo$facet), scales = "free_x", space = "free") +
-  ylab("relative frequency") +
-  #scale_fill_discrete(
-  scale_fill_viridis_d(
-    name = "", begin = 0.85, end = 0.4, option = "A",# begin = 0.85, end = 0.1,
-    labels = c(
-      "SFI reviewers\nN = 1591 (population)",
-      "survey respondents\nN = 310 (sample)"
-    )
-  ) +
-  scale_y_continuous(
-    limits = c(0,100), expand = c(0,0), breaks = c(0, 25, 50, 75, 100),
-    labels = c("0%", "25%", "50%", "75%", "100%")
-  ) +
-  theme(
-    plot.margin = margin(0, 0, 0, 0, "pt"),
-    panel.border = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray85", linetype = "dashed"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "gray95"),#element_blank(),
-    legend.position = "top",
-    legend.background = element_rect(fill = "gray95"),
-    strip.background = element_blank(),#element_rect(fill = "gray95"),
-    axis.title = element_blank(),
-    axis.line.y = element_line(colour = "black"),
-    axis.line.x = element_blank(),
-    axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
-
-dev.off()
-
-
-################################################################################
-################################################################################
-#
-# Appendix B ___________________________________________________________________
-th <- qbeta(1:4 / 5, shape1 = 2, shape2 = 1) * 100
-df <- rbind(
-  data.frame(
-    x = s$i$q34,
-    th = rep(
-      "1st threshold: between\n'very low quality' and 'low quality'",
-      times = length(s$i$q34)
-  )),
-  data.frame(
-  x = s$i$q33,
-  th = rep(
-    "4th threshold: between\n'high quality' and 'outstanding'",
-    times = length(s$i$q33)
-  ))
-)
-
-
-figureParameters <- list(
   filename = paste0("./outputGraphics/Fig12.", exportFormat),
-  width = 1250,
-  height = 700,
+  width = 1000,
+  height = 1000,
   units = "px",
   res = 300
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
 
-ggplot(df, aes(x = x, fill = th)) +
-  geom_histogram(breaks = 0:10 * 10, color = "black", position = "dodge") +
-  #geom_vline(xintercept = th, linetype = 2, color = "black") +
-  facet_grid(cols = vars(th)) +
-  scale_fill_viridis_d(name = "", begin = 0.85, end = 0.4, option = "A") +
-  scale_x_continuous(breaks = 0:10 * 10, labels = function(x){paste0(x, "%")}) +
-  scale_y_continuous(expand = c(0,0)) +
-  labs(x = "quality percentage", y = "frequency") +
-  theme(
-    plot.margin = margin(0, 0, 0, 0, "pt"),
-    panel.border = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90", linetype = "dashed"),
-    panel.grid.minor = element_blank(),
-    panel.background = element_rect(fill = "gray95"),
-    legend.position = "NA",
-    legend.background = element_rect(fill = "gray95"),
-    strip.background = element_blank(),#element_rect(fill = "gray95"),
-    #axis.title = element_blank(),
-    axis.line.y = element_line(colour = "black"),
-    axis.line.x = element_blank(),
-    axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 7))
+plot(figure12)
 
 dev.off()
+
+
 
 
 
@@ -881,10 +960,85 @@ dev.off()
 #
 #
 # ______________________________________________________________________________
+# Number of reviewers (N)
+#
+focusVariable = "nReviewers"
+focusVariableLab = "number of reviewers per proposal (N)"
+
+closeToBaseline <- apply(
+  X = ri,
+  MARGIN = 1,
+  FUN = function(x) {
+    ifelse(
+      any(x[variables[variables != focusVariable]] !=
+            as.data.frame(t(baseline[variables != focusVariable]))),
+      return(FALSE),
+      return(TRUE)
+    )
+  }
+)
+rii <- ri[closeToBaseline,]
+
+fig <- ggpubr::ggarrange(
+  plotParameter(
+    data = rii,
+    dep = "ICC", deplabel = "IRR (ICC)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = focusVariableLab
+  ),
+  plotParameter(
+    data = rii,
+    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  
+  plotParameter(
+    data = rii,
+    dep = "meanSD", deplabel = "disagreement\n(average SD)",
+    indep = "TCMswapping",
+    indeplabel = "TC-mapping heterogeneity (ρ)",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  ncol = 1, hjust = -1, align = "hv"
+)
+
+figureParameters <- list(
+  filename = paste0("./outputGraphics/Fig13.", exportFormat),
+  width = 1500, height = 1800, res = 300, units = "px"
+)
+if(exportFormat == "png") {do.call(png, figureParameters)} else {
+  do.call(tiff, figureParameters)}
+print(fig)
+dev.off()
+
+
+#figureParameters <- list(
+#  filename = paste0("./outputGraphics/Fig20.", exportFormat),
+#  width = 1500, height = 700, res = 300, units = "px"
+#)
+#if(exportFormat == "png") {do.call(png, figureParameters)} else {
+#  do.call(tiff, figureParameters)}
+#plotParameter(
+#  data = rii,
+#  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
+#  indep = "TCMswapping",
+#  indeplabel = "TC-mapping heterogeneity (ρ)",
+#  facetby = focusVariable,
+#  facetlabel = focusVariableLab
+#)
+#dev.off()
+
+# ______________________________________________________________________________
 # Number of topics/attributes (N)
 #
 focusVariable = "nTopics"
-focusVariableLab = "number of topics (N)"
+focusVariableLab = "number of topics (T)"
 #focusVariable = ""
 
 closeToBaseline <- apply(
@@ -914,6 +1068,14 @@ fig <- ggpubr::ggarrange(
     data = rii,
     dep = "spearmanRho", deplabel = "IRR (Spearman)",
     indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  plotParameter(
+    data = rii,
+    dep = "meanSD", deplabel = "disagreement\n(average SD)",
+    indep = "TCMswapping",
     indeplabel = "TC-mapping heterogeneity (ρ)",
     facetby = focusVariable,
     facetlabel = ""
@@ -922,8 +1084,8 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig13.", exportFormat),
-  width = 1500, height = 1200, res = 300, units = "px"
+  filename = paste0("./outputGraphics/Fig14.", exportFormat),
+  width = 1500, height = 1800, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
@@ -968,6 +1130,15 @@ fig <- ggpubr::ggarrange(
     data = rii,
     dep = "spearmanRho", deplabel = "IRR (Spearman)",
     indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  
+  plotParameter(
+    data = rii,
+    dep = "meanSD", deplabel = "disagreement\n(average SD)",
+    indep = "TCMswapping",
     indeplabel = "TC-mapping heterogeneity (ρ)",
     facetby = focusVariable,
     facetlabel = ""
@@ -976,14 +1147,13 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig14.", exportFormat),
-  width = 1500, height = 1200, res = 300, units = "px"
+  filename = paste0("./outputGraphics/Fig15.", exportFormat),
+  width = 1500, height = 1800, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
 print(fig)
 dev.off()
-
 
 
 
@@ -1021,6 +1191,14 @@ fig <- ggpubr::ggarrange(
     data = rii,
     dep = "spearmanRho", deplabel = "IRR (Spearman)",
     indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  plotParameter(
+    data = rii,
+    dep = "meanSD", deplabel = "disagreement\n(average SD)",
+    indep = "TCMswapping",
     indeplabel = "TC-mapping heterogeneity (ρ)",
     facetby = focusVariable,
     facetlabel = ""
@@ -1029,14 +1207,13 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig15.", exportFormat),
-  width = 1500, height = 1200, res = 300, units = "px"
+  filename = paste0("./outputGraphics/Fig16.", exportFormat),
+  width = 1500, height = 1800, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
 print(fig)
 dev.off()
-
 
 
 
@@ -1074,6 +1251,14 @@ fig <- ggpubr::ggarrange(
     data = rii,
     dep = "spearmanRho", deplabel = "IRR (Spearman)",
     indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  plotParameter(
+    data = rii,
+    dep = "meanSD", deplabel = "disagreement\n(average SD)",
+    indep = "TCMswapping",
     indeplabel = "TC-mapping heterogeneity (ρ)",
     facetby = focusVariable,
     facetlabel = ""
@@ -1082,15 +1267,13 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig16.", exportFormat),
-  width = 1500, height = 1200, res = 300, units = "px"
+  filename = paste0("./outputGraphics/Fig17.", exportFormat),
+  width = 1500, height = 1800, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
 print(fig)
 dev.off()
-
-
 
 
 
@@ -1127,6 +1310,14 @@ fig <- ggpubr::ggarrange(
     data = rii,
     dep = "spearmanRho", deplabel = "IRR (Spearman)",
     indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  plotParameter(
+    data = rii,
+    dep = "meanSD", deplabel = "disagreement\n(average SD)",
+    indep = "TCMswapping",
     indeplabel = "TC-mapping heterogeneity (ρ)",
     facetby = focusVariable,
     facetlabel = ""
@@ -1135,13 +1326,15 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig17.", exportFormat),
-  width = 1500, height = 1200, res = 300, units = "px"
+  filename = paste0("./outputGraphics/Fig18.", exportFormat),
+  width = 1500, height = 1800, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
 print(fig)
 dev.off()
+
+
 
 
 
@@ -1181,6 +1374,14 @@ fig <- ggpubr::ggarrange(
     data = rii,
     dep = "spearmanRho", deplabel = "IRR (Spearman)",
     indep = "TCMswapping",
+    indeplabel = "",
+    facetby = focusVariable,
+    facetlabel = ""
+  ),
+  plotParameter(
+    data = rii,
+    dep = "meanSD", deplabel = "disagreement\n(average SD)",
+    indep = "TCMswapping",
     indeplabel = "TC-mapping heterogeneity (ρ)",
     facetby = focusVariable,
     facetlabel = ""
@@ -1189,8 +1390,8 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig18.", exportFormat),
-  width = 1100, height = 1200, res = 300, units = "px"
+  filename = paste0("./outputGraphics/Fig19.", exportFormat),
+  width = 1100, height = 1800, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
@@ -1199,7 +1400,7 @@ dev.off()
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig9.", exportFormat),
+  filename = paste0("./outputGraphics/Fig8.", exportFormat),
   width = 1100, height = 700, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -1213,6 +1414,9 @@ plotParameter(
   facetlabel = focusVariableLab
 )
 dev.off()
+
+
+
 
 
 
@@ -1251,73 +1455,13 @@ fig <- ggpubr::ggarrange(
     data = rii,
     dep = "spearmanRho", deplabel = "IRR (Spearman)",
     indep = "TCMswapping",
-    indeplabel = "TC-mapping heterogeneity (ρ)",
-    facetby = focusVariable,
-    facetlabel = ""
-  ),
-  ncol = 1, hjust = -1, align = "hv"
-)
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig19.", exportFormat),
-  width = 1500, height = 1200, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-print(fig)
-dev.off()
-
-
-figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig10.", exportFormat),
-  width = 1500, height = 700, res = 300, units = "px"
-)
-if(exportFormat == "png") {do.call(png, figureParameters)} else {
-  do.call(tiff, figureParameters)}
-plotParameter(
-  data = rii,
-  dep = "ICC", deplabel = "inter-rater reliability (ICC)",
-  indep = "TCMswapping",
-  indeplabel = "TC-mapping heterogeneity (ρ)",
-  facetby = focusVariable,
-  facetlabel = focusVariableLab
-)
-dev.off()
-
-
-
-# ______________________________________________________________________________
-# Number of reviewers (R)
-#
-focusVariable = "nReviewers"
-focusVariableLab = "number of reviewers per proposal (R)"
-
-closeToBaseline <- apply(
-  X = ri,
-  MARGIN = 1,
-  FUN = function(x) {
-    ifelse(
-      any(x[variables[variables != focusVariable]] !=
-            as.data.frame(t(baseline[variables != focusVariable]))),
-      return(FALSE),
-      return(TRUE)
-    )
-  }
-)
-rii <- ri[closeToBaseline,]
-
-fig <- ggpubr::ggarrange(
-  plotParameter(
-    data = rii,
-    dep = "ICC", deplabel = "IRR (ICC)",
-    indep = "TCMswapping",
     indeplabel = "",
     facetby = focusVariable,
-    facetlabel = focusVariableLab
+    facetlabel = ""
   ),
   plotParameter(
     data = rii,
-    dep = "spearmanRho", deplabel = "IRR (Spearman)",
+    dep = "meanSD", deplabel = "disagreement\n(average SD)",
     indep = "TCMswapping",
     indeplabel = "TC-mapping heterogeneity (ρ)",
     facetby = focusVariable,
@@ -1327,8 +1471,8 @@ fig <- ggpubr::ggarrange(
 )
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/FigX.", exportFormat),
-  width = 1500, height = 1200, res = 300, units = "px"
+  filename = paste0("./outputGraphics/Fig20.", exportFormat),
+  width = 1500, height = 1800, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
@@ -1337,7 +1481,7 @@ dev.off()
 
 
 figureParameters <- list(
-  filename = paste0("./outputGraphics/Fig10.", exportFormat),
+  filename = paste0("./outputGraphics/Fig9.", exportFormat),
   width = 1500, height = 700, res = 300, units = "px"
 )
 if(exportFormat == "png") {do.call(png, figureParameters)} else {
@@ -1351,6 +1495,11 @@ plotParameter(
   facetlabel = focusVariableLab
 )
 dev.off()
+
+
+
+
+
 
 
 
@@ -1520,3 +1669,41 @@ hist(estim)
 summary(estim)
 mean(estim)
 # We now have our benchmark :)
+
+
+
+#######
+# Measuring the standard deviation of reviewer's evaluations in the SFI
+# programs "Industry Fellowship" and "Investigators Programme".
+
+
+#sdIF <- readxl::read_excel(
+#  path = "./data/unshareable/IF - Standard Deviations for Samples.xlsx",
+#  sheet = "Sheet1"
+#)$`Standard Deviation*`
+#sdIvP <- readxl::read_excel(
+#  path = "./data/unshareable/IVP - Standard Deviations for Samples (1).xlsx",
+#  sheet = "IVP"
+#)$`Stage 1 SD`
+load("./data/unshareable/SD data.RDATA")
+
+sdALL <- rbind(sdIF, sdIvP)
+
+print(paste(
+  "Average SD for IF proposals =",
+  round(weighted.mean(x = sdIF$sd, w = sdIF$weight, na.rm = TRUE), digits = 3)
+))
+print(paste(
+  "Average SD for IvP proposals =",
+  round(weighted.mean(x = sdIvP$sd, w = sdIvP$weight, na.rm = TRUE), digits = 3)
+))
+
+
+print(paste(
+  "Average SD (IF and IvP) =",
+  round(weighted.mean(x = sdALL$sd, w = sdALL$weight, na.rm=TRUE), digits=3)
+))
+
+
+
+

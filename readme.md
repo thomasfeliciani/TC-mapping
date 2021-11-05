@@ -58,7 +58,7 @@ Running this script might take several hours, depending on the area of the param
 
 
 ## results.r
-_Requires libraries:_ “ggplot2”_,_ “reshape” _and_ “ggpubr”_._
+_Requires libraries:_ “ggplot2”_,_ “reshape”_,_ “readxl” _and_ “ggpubr”_._
 
 _Sources_ “util.r”_._
 

@@ -41,7 +41,7 @@ battery <- expand.grid(
 # be simulated.
 # To do this, we first define a baseline parameter configuration:
 baseline = c(
-  nReviewers = 5,
+  nReviewers = 3,
   nProposals = 10,
   attributeMean = 0.75,
   attributeSD = 0.2,
