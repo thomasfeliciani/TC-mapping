@@ -226,6 +226,7 @@ if(exportFormat == "png") {do.call(png, figureParameters)} else {
   do.call(tiff, figureParameters)}
 
 ggplot(data = df, aes(x = variable, y = topic, fill = value)) +
+  #geom_tile(color = "black") +
   geom_tile() +
   scale_y_discrete(limits = rev, expand = c(0,0)) +
   scale_x_discrete(expand = c(0,0)) +
@@ -438,6 +439,7 @@ dev.off()
 # Simulation results
 
 load("./output/ri.RData")
+#load("./output/ri_extra.RData")
 
 baseline = c(
   nReviewers = 3,

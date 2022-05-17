@@ -5,7 +5,7 @@
 # ______________________________________________________________________________
 # Cleaning environment and loading resources.
 
-rm (list = ls( ))
+rm (list = ls())
 source("simulation.r")
 library("compiler")
 library("parallel")
@@ -13,11 +13,12 @@ library("doSNOW")
 load("./data/pTCM.RData") # This contains the weights for a TC-mapping template.
 
 
+#pTCM[1:12,1:3] <- 0.5 ######## (for extra analyses to test homogeneous mapping)
 
 # ______________________________________________________________________________
 # Defining the parameter space to be explored. 
 
-nRepetitions <- 500 # repetitions per execution
+nRepetitions <- 500 # repetitions per execution. Default is 500
 
 battery <- expand.grid(
   nReviewers = c(3, 5, 10),
@@ -147,6 +148,7 @@ print(paste("Simulation battery completed on", Sys.time()))
 
 save(
   file = "./output/ri.RData",
+  #file = "./output/ri_extra.RData",
   ri, battery
 )
 
