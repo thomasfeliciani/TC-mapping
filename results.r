@@ -285,7 +285,7 @@ edgeLabelsAccent <- data.frame(
   x = edgeLabels$x,
   y = edgeLabels$y,
   lab = c(
-    "\nerror and biases",
+    "\nrandom and systematic errors",
     "\nTC-mapping",
     "",
     "\ninterpretation of\nthe grading language"
@@ -1164,7 +1164,7 @@ dev.off()
 # Reviewer error (E)
 #
 focusVariable = "reviewerError"
-focusVariableLab = "reviewer error (\u0190)"
+focusVariableLab = "random error (\u0190)"
 
 closeToBaseline <- apply(
   X = ri,
@@ -1221,10 +1221,10 @@ dev.off()
 
 
 # ______________________________________________________________________________
-# Reviewer bias diversity (λ)
+# Variability in systematic errors (λ)
 #
 focusVariable = "reviewerBiasDiversity"
-focusVariableLab = "diversity in reviewer bias (λ)"
+focusVariableLab = "variability in systematic errors (λ)"
 
 closeToBaseline <- apply(
   X = ri,
